@@ -12,6 +12,9 @@ import { fetchMyStats } from "@/lib/questions";
 import { CATEGORIES } from "@/lib/categories";
 import { deleteMyAccount } from "@/lib/account.functions";
 import { LegalLinks } from "@/components/LegalPage";
+import { AvatarSticker } from "@/components/Avatar";
+import { AVATAR_COLORS, AVATAR_EMOJIS, normalizeUsername, usernameError } from "@/lib/social";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -35,17 +38,20 @@ function Profile() {
     queryKey: ["profile", user.id],
     queryFn: async () => {
       const [p, q, v] = await Promise.all([
-        supabase.from("profiles").select("display_name, interests").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("display_name, interests, username, avatar_emoji, avatar_color").eq("id", user.id).maybeSingle(),
         supabase.from("questions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("votes").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       ]);
-      return { name: p.data?.display_name ?? "", interests: p.data?.interests ?? [...CATEGORIES], questions: q.count ?? 0, votes: v.count ?? 0 };
+      return { name: p.data?.display_name ?? "", username: p.data?.username ?? "", emoji: p.data?.avatar_emoji ?? "😎", color: p.data?.avatar_color ?? "yellow", interests: p.data?.interests ?? [...CATEGORIES], questions: q.count ?? 0, votes: v.count ?? 0 };
     },
   });
   const stats = useQuery({ queryKey: ["stats", user.id], queryFn: fetchMyStats });
   const [name, setName] = useState("");
   const [interests, setInterests] = useState<string[]>([...CATEGORIES]);
-  useEffect(() => { if (data) { setName(data.name); setInterests(data.interests); } }, [data]);
+  const [username, setUsername] = useState("");
+  const [emoji, setEmoji] = useState("😎");
+  const [color, setColor] = useState("yellow");
+  useEffect(() => { if (data) { setName(data.name); setInterests(data.interests); setUsername(data.username); setEmoji(data.emoji); setColor(data.color); } }, [data]);
 
   async function saveCats() {
     try {
@@ -58,8 +64,11 @@ function Profile() {
   }
 
   async function save() {
-    const { error } = await supabase.from("profiles").update({ display_name: name.trim() }).eq("id", user.id);
-    if (error) { toast.error(error.message); return; }
+    const u = normalizeUsername(username);
+    const bad = usernameError(u);
+    if (bad) { toast.error(`Username: ${bad}`); return; }
+    const { error } = await supabase.from("profiles").update({ display_name: name.trim(), username: u, avatar_emoji: emoji, avatar_color: color }).eq("id", user.id);
+    if (error) { toast.error(error.code === "23505" ? "That username's taken 😩" : error.message); return; }
     toast.success("Saved ✨");
     qc.invalidateQueries();
   }
@@ -95,13 +104,17 @@ function Profile() {
   return (
     <AppShell title="It's you!">
       <div className="flex items-center gap-4 rounded-2xl bg-yellow p-5 brut">
-        <span className="grid size-16 place-items-center rounded-xl bg-primary font-display text-2xl font-extrabold brut-sm tilt-l text-foreground">
-          {(name || user.email || "?").charAt(0).toUpperCase()}
-        </span>
+        <AvatarSticker emoji={emoji} color={color} size="lg" />
         <div className="min-w-0">
           <p className="truncate font-display text-lg font-semibold">{name || "Mystery voter"}</p>
+          {data?.username && <p className="truncate text-sm font-bold">@{data.username}</p>}
           <p className="truncate text-sm text-muted-foreground">{user.email}</p>
         </div>
+      </div>
+      <div className="mt-4 grid grid-cols-3 gap-2">
+        {data?.username && <Button asChild variant="soft" className="h-11 px-2 text-sm"><Link to="/u/$username" params={{ username: data.username }}>My page</Link></Button>}
+        <Button asChild variant="lime" className="h-11 px-2 text-sm"><Link to="/crews">Crews 🫂</Link></Button>
+        <Button asChild variant="soft" className="h-11 px-2 text-sm"><Link to="/leaderboard">Top 🏆</Link></Button>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat n={stats.data?.points ?? 0} label="⭐ Points" />
@@ -120,6 +133,19 @@ function Profile() {
         <Button variant="hero" className="mt-4 h-11 w-full" onClick={saveCats}>Save vibe</Button>
       </div>
       <div className="mt-6 space-y-3">
+        <label className="text-sm font-medium">Avatar sticker</label>
+        <div className="flex flex-wrap gap-2">
+          {AVATAR_EMOJIS.map((e) => (
+            <button key={e} type="button" aria-pressed={emoji === e} onClick={() => setEmoji(e)} className={cn("grid size-10 place-items-center rounded-lg text-xl brut-sm", emoji === e ? "bg-ink" : "bg-card")}>{e}</button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          {AVATAR_COLORS.map((c) => (
+            <button key={c} type="button" aria-label={`Color ${c}`} aria-pressed={color === c} onClick={() => setColor(c)} className={cn("size-10 rounded-full brut-sm", { yellow: "bg-yellow", pink: "bg-pink", lime: "bg-lime", card: "bg-card" }[c], color === c && "ring-4 ring-ink")} />
+          ))}
+        </div>
+        <label className="block text-sm font-medium">Username</label>
+        <Input className="h-12 rounded-xl bg-card" value={username} onChange={(e) => setUsername(normalizeUsername(e.target.value))} maxLength={20} autoCapitalize="none" />
         <label className="text-sm font-medium">Display name</label>
         <Input className="h-12 rounded-xl bg-card" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
         <Button variant="hero" className="h-12 w-full" onClick={save}>Save</Button>

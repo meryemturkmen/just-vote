@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Bell, Flame, Plus, LayoutGrid, Smile } from "lucide-react";
+import { Bell, Trophy, Flame, Plus, LayoutGrid, Smile } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useUser } from "@/hooks/use-session";
@@ -14,7 +14,12 @@ export function AppShell({ children, title, bleed }: { children: ReactNode; titl
       <header className="sticky top-0 z-20 border-b-2 bg-background px-4 py-3 min-[400px]:px-5">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="Just Vote home"><Logo /></Link>
-          <NotificationBell />
+          <div className="flex items-center gap-2">
+            <Link to="/leaderboard" aria-label="Weekly leaderboard" className="grid size-11 place-items-center rounded-xl bg-lime brut-sm press">
+              <Trophy className="size-5" strokeWidth={2.75} />
+            </Link>
+            <NotificationBell />
+          </div>
         </div>
       </header>
       <div key={path} className="animate-page">
