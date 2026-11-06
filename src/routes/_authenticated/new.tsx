@@ -1,15 +1,18 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { ImagePlus } from "lucide-react";
+import { Camera, ImagePlus, PartyPopper, Share2, X } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { supabase } from "@/integrations/supabase/client";
-import { BUCKET } from "@/lib/questions";
-import { CATEGORIES, isCategory } from "@/lib/categories";
+import { Switch } from "@/components/ui/switch";
 import { Chip } from "@/components/CategoryChips";
+import { supabase } from "@/integrations/supabase/client";
+import { BUCKET, shareQuestion } from "@/lib/questions";
+import { CATEGORIES, isCategory } from "@/lib/categories";
+import { compressImage } from "@/lib/compress";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/new")({
   head: () => ({
@@ -25,50 +28,62 @@ export const Route = createFileRoute("/_authenticated/new")({
   component: NewQuestion,
 });
 
-type Opt = { file: File | null; preview: string; label: string };
+const DURATIONS = [
+  { h: 1, label: "1 hour" },
+  { h: 24, label: "24 hours" },
+  { h: 72, label: "3 days" },
+] as const;
+
+type Photo = { blob: Blob; preview: string } | null;
 
 function NewQuestion() {
   const { user } = Route.useRouteContext();
-  const nav = useNavigate();
   const qc = useQueryClient();
+  const [a, setA] = useState<Photo>(null);
+  const [b, setB] = useState<Photo>(null);
+  const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
-  const [a, setA] = useState<Opt>({ file: null, preview: "", label: "" });
-  const [b, setB] = useState<Opt>({ file: null, preview: "", label: "" });
-  const [category, setCategory] = useState<string>("");
+  const [occasion, setOccasion] = useState("");
+  const [budget, setBudget] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
+  const [duration, setDuration] = useState<number>(24);
   const [busy, setBusy] = useState(false);
+  const [created, setCreated] = useState<{ id: string; title: string } | null>(null);
 
-  async function upload(f: File) {
-    const ext = f.name.split(".").pop() || "jpg";
-    const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, f, { contentType: f.type });
+  async function upload(blob: Blob) {
+    const path = `${user.id}/${crypto.randomUUID()}.jpg`;
+    const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: blob.type || "image/jpeg" });
     if (error) throw error;
     return path;
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!a || !b) { toast.error("Please add both photos"); return; }
     if (!isCategory(category)) { toast.error("Please pick a category"); return; }
-    if (!a.file || !b.file) { toast.error("Please add a photo for both options"); return; }
     setBusy(true);
     try {
-      const [pa, pb] = await Promise.all([upload(a.file), upload(b.file)]);
+      const [pa, pb] = await Promise.all([upload(a.blob), upload(b.blob)]);
       const { data, error } = await supabase
         .from("questions")
         .insert({
           user_id: user.id,
           title: title.trim(),
           category,
-          option_a_label: a.label.trim(),
+          occasion: occasion.trim() || null,
+          budget: budget.trim() || null,
+          visibility: isPublic ? "public" : "link",
+          duration_hours: duration,
+          option_a_label: "Option A",
           option_a_image: pa,
-          option_b_label: b.label.trim(),
+          option_b_label: "Option B",
           option_b_image: pb,
         })
         .select("id")
         .single();
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["questions"] });
-      toast.success("Your question is live! 🎉");
-      nav({ to: "/q/$id", params: { id: data.id } });
+      setCreated({ id: data.id, title: title.trim() || "Which one should I buy?" });
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -76,29 +91,82 @@ function NewQuestion() {
     }
   }
 
+  if (created) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center pt-10 text-center">
+          <span className="grid size-20 place-items-center rounded-full bg-primary-soft text-primary">
+            <PartyPopper className="size-9" />
+          </span>
+          <h1 className="mt-6 text-2xl font-bold">Your question is live!</h1>
+          <p className="mt-2 max-w-xs text-sm text-muted-foreground">
+            {isPublic ? "It's in the public feed. Share it to get even more votes." : "Only people with the link can vote — send it to your friends."}
+          </p>
+          <Button variant="hero" className="mt-8 h-12 w-full" onClick={() => shareQuestion(created.id, created.title)}>
+            <Share2 /> Share link
+          </Button>
+          <Button asChild variant="soft" className="mt-3 h-12 w-full">
+            <Link to="/q/$id" params={{ id: created.id }}>View question</Link>
+          </Button>
+        </div>
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell title="What can't you decide?">
-      <form onSubmit={submit} className="space-y-6">
-        <Input
-          className="h-12 rounded-2xl"
-          placeholder="e.g. Which sneakers should I get?"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          maxLength={120}
-          required
-        />
-        <div>
-          <p className="mb-2 text-sm font-semibold">Category <span className="text-primary">*</span></p>
+      <form onSubmit={submit} className="space-y-7">
+        <div className="grid grid-cols-2 gap-3">
+          <PhotoPicker name="A" photo={a} set={setA} />
+          <PhotoPicker name="B" photo={b} set={setB} />
+        </div>
+
+        <Section label="Category" required>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((c) => (
               <Chip key={c} active={category === c} onClick={() => setCategory(c)}>{c}</Chip>
             ))}
           </div>
-        </div>
+        </Section>
+
+        <Section label="Title" hint="optional">
+          <Input className="h-12 rounded-2xl" placeholder='e.g. "Which one for the wedding?"' value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
+        </Section>
+
         <div className="grid grid-cols-2 gap-3">
-          <Picker name="Option A" opt={a} set={setA} />
-          <Picker name="Option B" opt={b} set={setB} />
+          <Section label="Occasion" hint="optional">
+            <Input className="h-12 rounded-2xl" placeholder="e.g. Wedding" value={occasion} onChange={(e) => setOccasion(e.target.value)} maxLength={40} />
+          </Section>
+          <Section label="Budget" hint="optional">
+            <Input className="h-12 rounded-2xl" placeholder="e.g. up to €150" value={budget} onChange={(e) => setBudget(e.target.value)} maxLength={30} />
+          </Section>
         </div>
+
+        <Section label="Voting duration">
+          <div className="grid grid-cols-3 gap-2 rounded-full bg-muted p-1">
+            {DURATIONS.map((d) => (
+              <button
+                key={d.h}
+                type="button"
+                onClick={() => setDuration(d.h)}
+                className={cn("rounded-full py-2.5 text-sm font-medium transition", duration === d.h ? "bg-card text-foreground shadow-card" : "text-muted-foreground")}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        <label className="flex items-center justify-between gap-4 rounded-3xl border bg-card p-4 shadow-card">
+          <div>
+            <p className="text-sm font-semibold">{isPublic ? "Show in public feed" : "Link only"}</p>
+            <p className="text-xs text-muted-foreground">
+              {isPublic ? "Everyone can find and vote on it." : "Only people you send the link to can vote."}
+            </p>
+          </div>
+          <Switch checked={isPublic} onCheckedChange={setIsPublic} aria-label="Show in public feed" />
+        </label>
+
         <Button type="submit" variant="hero" disabled={busy} className="h-12 w-full">
           {busy ? "Posting…" : "Ask the crowd"}
         </Button>
@@ -107,41 +175,64 @@ function NewQuestion() {
   );
 }
 
-function Picker({ name, opt, set }: { name: string; opt: Opt; set: (o: Opt) => void }) {
+function Section({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
-    <div className="space-y-2">
-      <label className="block cursor-pointer overflow-hidden rounded-2xl border-2 border-dashed bg-muted">
-        <input
-          type="file"
-          accept="image/*"
-          className="sr-only"
-          aria-label={`${name} photo`}
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) set({ ...opt, file: f, preview: URL.createObjectURL(f) });
-          }}
-        />
-        <div className="grid aspect-[3/4] place-items-center">
-          {opt.preview ? (
-            <img src={opt.preview} alt={name} className="size-full object-cover" />
-          ) : (
-            <div className="flex flex-col items-center gap-2 text-muted-foreground">
-              <span className="grid size-11 place-items-center rounded-full bg-primary-soft text-primary">
-                <ImagePlus className="size-5" />
-              </span>
-              <span className="text-xs font-medium">{name}</span>
-            </div>
-          )}
-        </div>
-      </label>
-      <Input
-        className="h-10 rounded-xl"
-        placeholder={`${name} name`}
-        value={opt.label}
-        onChange={(e) => set({ ...opt, label: e.target.value })}
-        maxLength={40}
-        required
-      />
+    <div>
+      <p className="mb-2 text-sm font-semibold">
+        {label} {required && <span className="text-primary">*</span>}
+        {hint && <span className="font-normal text-muted-foreground"> · {hint}</span>}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function PhotoPicker({ name, photo, set }: { name: string; photo: Photo; set: (p: Photo) => void }) {
+  const [working, setWorking] = useState(false);
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    setWorking(true);
+    try {
+      const blob = await compressImage(f);
+      set({ blob, preview: URL.createObjectURL(blob) });
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-3xl border-2 border-dashed bg-muted">
+      <div className="aspect-[3/4]">
+        {photo ? (
+          <>
+            <img src={photo.preview} alt={`Option ${name}`} className="size-full object-cover" />
+            <button type="button" aria-label={`Remove photo ${name}`} onClick={() => set(null)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-card/90 text-foreground">
+              <X className="size-4" />
+            </button>
+            <span className="absolute left-2 top-2 grid size-8 place-items-center rounded-full bg-primary font-display font-bold text-primary-foreground">{name}</span>
+          </>
+        ) : (
+          <div className="flex size-full flex-col items-center justify-center gap-3 p-3">
+            <span className="font-display text-3xl font-bold text-primary">{name}</span>
+            {working ? (
+              <p className="text-xs text-muted-foreground">Optimizing…</p>
+            ) : (
+              <div className="flex w-full flex-col gap-2">
+                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-full bg-card py-2 text-xs font-semibold">
+                  <Camera className="size-4 text-primary" /> Camera
+                  <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={onFile} aria-label={`Take photo ${name}`} />
+                </label>
+                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-full bg-card py-2 text-xs font-semibold">
+                  <ImagePlus className="size-4 text-primary" /> Gallery
+                  <input type="file" accept="image/*" className="sr-only" onChange={onFile} aria-label={`Choose photo ${name}`} />
+                </label>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

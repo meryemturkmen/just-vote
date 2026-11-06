@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
-import { castVote, percent, type Question } from "@/lib/questions";
+import { castVote, displayTitle, isClosed, percent, timeLeft, type Question } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 import { CategoryTag } from "@/components/CategoryChips";
 
@@ -13,7 +13,8 @@ export function QuestionCard({ q, linked = true }: { q: Question; linked?: boole
     onSuccess: () => qc.invalidateQueries({ queryKey: ["questions"] }),
     onError: (e: Error) => toast.error(e.message),
   });
-  const voted = q.myVote !== null;
+  const closed = isClosed(q);
+  const voted = q.myVote !== null || closed;
   const [pa, pb] = percent(q.votesA, q.votesB);
   const total = q.votesA + q.votesB;
 
@@ -25,7 +26,7 @@ export function QuestionCard({ q, linked = true }: { q: Question; linked?: boole
     return (
       <button
         type="button"
-        disabled={vote.isPending}
+        disabled={vote.isPending || closed}
         onClick={() => vote.mutate(c)}
         className={cn(
           "group relative overflow-hidden rounded-2xl bg-muted text-left ring-2 ring-transparent transition",
@@ -59,14 +60,19 @@ export function QuestionCard({ q, linked = true }: { q: Question; linked?: boole
 
   return (
     <article className="rounded-3xl border bg-card p-4 shadow-card">
-      <CategoryTag category={q.category} />
+      <div className="flex flex-wrap items-center gap-1.5">
+        <CategoryTag category={q.category} />
+        {q.occasion && <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">🎉 {q.occasion}</span>}
+        {q.budget && <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">💸 {q.budget}</span>}
+        <span className="ml-auto text-[11px] font-medium text-muted-foreground">{timeLeft(q.ends_at)}</span>
+      </div>
       <div className="mb-3 mt-2 flex items-baseline justify-between gap-3">
         {linked ? (
           <Link to="/q/$id" params={{ id: q.id }} className="font-display text-lg font-semibold leading-snug">
-            {q.title}
+            {displayTitle(q)}
           </Link>
         ) : (
-          <h2 className="text-lg font-semibold leading-snug">{q.title}</h2>
+          <h2 className="text-lg font-semibold leading-snug">{displayTitle(q)}</h2>
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">

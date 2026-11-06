@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
-import { fetchMine, percent } from "@/lib/questions";
+import { displayTitle, fetchMine, percent } from "@/lib/questions";
 
 export const Route = createFileRoute("/_authenticated/my")({
   head: () => ({
@@ -45,7 +45,7 @@ function Mine() {
                 <img src={q.option_b_url} alt="" className="size-16 rounded-xl object-cover" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate font-semibold">{q.title}</p>
+                <p className="truncate font-semibold">{displayTitle(q)}</p>
                 <p className="mt-0.5 text-xs text-muted-foreground">{total} {total === 1 ? "vote" : "votes"}</p>
                 <div className="mt-2 flex h-2 overflow-hidden rounded-full bg-border">
                   {total > 0 && <><div className="bg-primary" style={{ width: `${pa}%` }} /><div className="bg-accent-foreground/30" style={{ width: `${pb}%` }} /></>}
