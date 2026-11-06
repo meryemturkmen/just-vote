@@ -40,3 +40,14 @@ describe("decisions and notifications", () => {
     expect(notificationText({ kind: "votes", count: 1 })).toBe("1 new vote");
   });
 });
+
+import { BOOST_COST, votePoints } from "@/lib/questions";
+describe("points", () => {
+  it("gives 1 point per vote and 2 in an interest category", () => {
+    expect(votePoints("Tech", ["Shoes"])).toBe(1);
+    expect(votePoints("Tech", ["Tech", "Shoes"])).toBe(2);
+  });
+  it("costs 10 points to boost", () => {
+    expect(BOOST_COST).toBe(10);
+  });
+});

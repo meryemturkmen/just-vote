@@ -8,7 +8,7 @@ import { CategoryTag } from "@/components/CategoryChips";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import {
-  decideQuestion, decisionLabel, displayTitle, fetchMine, isClosed, percent, timeLeft, type Question,
+  BOOST_COST, boostQuestion, isBoosted, decideQuestion, decisionLabel, displayTitle, fetchMine, isClosed, percent, timeLeft, type Question,
 } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 
@@ -98,6 +98,7 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
           <Button asChild variant="soft" className="h-9 px-4 text-xs"><Link to="/q/$id" params={{ id: q.id }}>Final results</Link></Button>
         ) : (
           <div className="flex gap-2">
+            {!closed && q.visibility === "public" && <BoostButton q={q} />}
             {closed && <Button asChild variant="soft" className="h-9 px-4 text-xs"><Link to="/q/$id" params={{ id: q.id }}>Final results</Link></Button>}
             <Button variant="hero" className="h-9 px-4 text-xs" onClick={onDecide}>I've decided</Button>
           </div>
@@ -148,5 +149,24 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
         )}
       </DrawerContent>
     </Drawer>
+  );
+}
+
+function BoostButton({ q }: { q: Question }) {
+  const qc = useQueryClient();
+  const boost = useMutation({
+    mutationFn: () => boostQuestion(q.id),
+    onSuccess: () => {
+      toast.success("Boosted for 24 hours 🚀");
+      qc.invalidateQueries({ queryKey: ["questions"] });
+      qc.invalidateQueries({ queryKey: ["stats"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+  if (isBoosted(q)) return <span className="self-center text-xs font-semibold text-primary">🚀 Boosted</span>;
+  return (
+    <Button variant="soft" className="h-9 px-3 text-xs" disabled={boost.isPending} onClick={() => boost.mutate()}>
+      🚀 Boost · {BOOST_COST} pts
+    </Button>
   );
 }

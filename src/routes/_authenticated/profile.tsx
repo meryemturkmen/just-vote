@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { InterestPicker } from "@/components/InterestPicker";
 import { saveInterests } from "@/lib/profile";
+import { fetchMyStats } from "@/lib/questions";
 import { CATEGORIES } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -39,6 +40,7 @@ function Profile() {
       return { name: p.data?.display_name ?? "", interests: p.data?.interests ?? [...CATEGORIES], questions: q.count ?? 0, votes: v.count ?? 0 };
     },
   });
+  const stats = useQuery({ queryKey: ["stats", user.id], queryFn: fetchMyStats });
   const [name, setName] = useState("");
   const [interests, setInterests] = useState<string[]>([...CATEGORIES]);
   useEffect(() => { if (data) { setName(data.name); setInterests(data.interests); } }, [data]);
@@ -78,6 +80,13 @@ function Profile() {
           <p className="truncate text-sm text-muted-foreground">{user.email}</p>
         </div>
       </div>
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <Stat n={stats.data?.points ?? 0} label="⭐ Points" />
+        <Stat n={stats.data?.streak ?? 0} label={`🔥 Day streak`} />
+      </div>
+      <p className="mt-2 px-1 text-xs text-muted-foreground">
+        Earn 1 point per vote, 2 in your interest categories. Spend 10 to boost a question for 24 hours. Vote every day to grow your streak!
+      </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat n={data?.questions ?? 0} label="Questions asked" />
         <Stat n={data?.votes ?? 0} label="Votes cast" />

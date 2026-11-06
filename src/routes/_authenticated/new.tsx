@@ -121,6 +121,10 @@ function NewQuestion() {
           <PhotoPicker name="B" photo={b} set={setB} />
         </div>
 
+        <p className="-mt-3 rounded-2xl bg-muted px-4 py-3 text-xs text-muted-foreground">
+          🙏 Please don't upload photos showing other people's faces without permission.
+        </p>
+
         <Section label="Category" required>
           <div className="flex flex-wrap gap-2">
             {CATEGORIES.map((c) => (

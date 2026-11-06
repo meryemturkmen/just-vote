@@ -12,6 +12,7 @@ import {
   isClosed, myVoterId, decisionLabel, percent, sendFeedback, shareQuestion, timeLeft, type Question,
 } from "@/lib/questions";
 import { cn } from "@/lib/utils";
+import { ReportButton } from "@/components/ReportButton";
 
 export const Route = createFileRoute("/q/$id")({
   head: () => ({
@@ -74,7 +75,10 @@ function Context({ q }: { q: Question }) {
           {q.budget && <Info label="Budget" value={q.budget} />}
         </dl>
       )}
-      <p className="mt-2 text-xs text-muted-foreground">asked by {q.author}</p>
+      <div className="mt-2 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">asked by {q.author}</p>
+        <ReportButton questionId={q.id} />
+      </div>
     </section>
   );
 }

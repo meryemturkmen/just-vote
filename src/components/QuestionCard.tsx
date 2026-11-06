@@ -3,9 +3,10 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
-import { castVote, displayTitle, isClosed, percent, timeLeft, type Question } from "@/lib/questions";
+import { castVote, displayTitle, isBoosted, isClosed, percent, timeLeft, type Question } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 import { CategoryTag } from "@/components/CategoryChips";
+import { ReportButton } from "@/components/ReportButton";
 
 export function QuestionCard({ q: initial, linked = true }: { q: Question; linked?: boolean }) {
   const qc = useQueryClient();
@@ -68,6 +69,7 @@ export function QuestionCard({ q: initial, linked = true }: { q: Question; linke
     <article className="rounded-3xl border bg-card p-4 shadow-card">
       <div className="flex flex-wrap items-center gap-1.5">
         <CategoryTag category={q.category} />
+        {isBoosted(q) && <span className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground">🚀 Boosted</span>}
         {q.occasion && <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">🎉 {q.occasion}</span>}
         {q.budget && <span className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground">💸 {q.budget}</span>}
         <span className="ml-auto text-[11px] font-medium text-muted-foreground">{timeLeft(q.ends_at)}</span>
@@ -85,9 +87,10 @@ export function QuestionCard({ q: initial, linked = true }: { q: Question; linke
         {option("a")}
         {option("b")}
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">
-        by {q.author} · {total} {total === 1 ? "vote" : "votes"}
-      </p>
+      <div className="mt-3 flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">by {q.author} · {total} {total === 1 ? "vote" : "votes"}</p>
+        <ReportButton questionId={q.id} />
+      </div>
     </article>
   );
 }
