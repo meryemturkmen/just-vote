@@ -88,6 +88,14 @@ function Feed() {
             <QuestionSkeleton full />
           )}
 
+          {feed.isError && (
+            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+              <p className="tilt-r rounded-lg bg-destructive px-4 py-2 font-display text-3xl font-extrabold text-destructive-foreground brut">Feed's having a moment 😵‍💫</p>
+              <p className="font-medium">Couldn't load questions. Check your wifi and try again.</p>
+              <Button variant="hero" size="xl" onClick={() => feed.refetch()}>Try again</Button>
+            </div>
+          )}
+
           {feed.isSuccess && items.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
               <p className="tilt-l rounded-lg bg-lime px-4 py-2 font-display text-3xl font-extrabold brut">Nothing to judge yet 👀</p>
