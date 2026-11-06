@@ -72,7 +72,7 @@ export function QuestionCard({ q, linked = true }: { q: Question; linked?: boole
             {displayTitle(q)}
           </Link>
         ) : (
-          <h2 className="text-lg font-semibold leading-snug">{q.title}</h2>
+          <h2 className="text-lg font-semibold leading-snug">{displayTitle(q)}</h2>
         )}
       </div>
       <div className="grid grid-cols-2 gap-3">
