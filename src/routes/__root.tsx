@@ -11,6 +11,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import { Toaster } from "@/components/ui/sonner";
+import { InstallHint } from "@/components/InstallHint";
 import { supabase } from "@/integrations/supabase/client";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -80,10 +81,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Just Vote" },
-      { name: "description", content: "Can't decide between two products? Let others vote." },
-      { property: "og:title", content: "Just Vote" },
-      { property: "og:description", content: "Can't decide between two products? Let others vote." },
+      { title: "Just Vote — Pick one. No pressure." },
+      { name: "description", content: "Can't pick between two things? Drop both pics and let the internet vote. Shoes, laptops, sofas, anything." },
+      { property: "og:title", content: "Just Vote — Pick one. No pressure." },
+      { property: "og:description", content: "Can't pick between two things? Drop both pics and let the internet vote." },
+      { name: "theme-color", content: "#fff36b" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "Just Vote" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
@@ -94,6 +100,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         href: appCss,
       },
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "apple-touch-startup-image", href: "/splash.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
@@ -147,6 +156,7 @@ function RootComponent() {
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
       <Toaster position="top-center" />
+      <InstallHint />
     </QueryClientProvider>
   );
 }

@@ -126,6 +126,7 @@ export async function castVote(questionId: string, choice: "a" | "b") {
     if (error.code === "23505") throw new Error("You already voted on this one");
     throw error;
   }
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("jv:voted"));
 }
 
 export const FEEDBACK_TAGS = ["Design", "Quality", "Price", "Style", "Features"] as const;
