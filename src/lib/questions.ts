@@ -29,6 +29,7 @@ export type Question = {
 type Row = {
   id: string;
   user_id: string;
+  hidden?: boolean;
   title: string;
   category: string;
   option_a_label: string;
@@ -62,7 +63,7 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
   return rows.map((r) => ({
     id: r.id,
     user_id: r.user_id,
-    hidden: r.hidden,
+    hidden: r.hidden ?? false,
     title: r.title,
     category: r.category,
     option_a_label: r.option_a_label,
