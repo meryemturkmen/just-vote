@@ -29,7 +29,7 @@ function Crews() {
   const nav = useNavigate();
   const { data, isLoading } = useQuery({ queryKey: ["crews"], queryFn: fetchMyCrews });
   const [name, setName] = useState("");
-  const [emoji, setEmoji] = useState(CREW_EMOJIS[0]);
+  const [emoji, setEmoji] = useState<string>("🫂");
   const [busy, setBusy] = useState(false);
 
   async function create(e: React.FormEvent) {
