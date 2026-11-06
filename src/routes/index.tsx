@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { QuestionSkeleton } from "@/components/Skeleton";
+import { WelcomeIntro, readGuestInterests } from "@/components/WelcomeIntro";
 import { AppShell } from "@/components/AppShell";
 import { QuestionCard } from "@/components/QuestionCard";
 import { Chip } from "@/components/CategoryChips";
@@ -39,7 +41,10 @@ function Feed() {
     queryFn: () => fetchInterests(user!.id),
     enabled: !!user,
   });
-  const myInterests = user && interests.data && interests.data.length < CATEGORIES.length ? interests.data : null;
+  const [guestInterests, setGuestInterests] = useState<string[] | null>(null);
+  useEffect(() => setGuestInterests(readGuestInterests()), []);
+  const source = user ? interests.data : guestInterests;
+  const myInterests = source && source.length < CATEGORIES.length ? source : null;
   const ready = !loading && (!user || interests.isFetched);
 
   const feed = useInfiniteQuery({
@@ -66,6 +71,7 @@ function Feed() {
 
   return (
     <AppShell bleed>
+      <WelcomeIntro onDone={() => setGuestInterests(readGuestInterests())} />
       <div className="flex h-[calc(100dvh-70px)] flex-col">
         <div className="border-b-2 bg-background px-4 py-2.5">
           <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 pt-0.5">
@@ -79,15 +85,13 @@ function Feed() {
 
         <div className="no-scrollbar relative min-h-0 flex-1 snap-y snap-mandatory overflow-y-scroll mb-[92px]" ref={scroller}>
           {(feed.isLoading || !ready) && (
-            <div className="flex h-full items-center justify-center">
-              <p className="animate-wiggle rounded-lg bg-yellow px-4 py-2 font-display text-xl font-extrabold brut">Loading the drama…</p>
-            </div>
+            <QuestionSkeleton full />
           )}
 
           {feed.isSuccess && items.length === 0 && (
             <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-              <p className="tilt-l rounded-lg bg-lime px-4 py-2 font-display text-3xl font-extrabold brut">All caught up 🫡</p>
-              <p className="font-medium">No open questions here rn. Got your own dilemma?</p>
+              <p className="tilt-l rounded-lg bg-lime px-4 py-2 font-display text-3xl font-extrabold brut">Nothing to judge yet 👀</p>
+              <p className="font-medium">Be the first to ask. Main character energy.</p>
               <Button asChild variant="hero" size="xl"><Link to="/new">Ask the internet</Link></Button>
             </div>
           )}
