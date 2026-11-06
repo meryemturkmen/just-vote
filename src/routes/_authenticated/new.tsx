@@ -82,6 +82,13 @@ function NewQuestion() {
         .select("id")
         .single();
       if (error) throw error;
+      try {
+        const { renderPreviewCard } = await import("@/lib/story-card");
+        const og = await renderPreviewCard(a.blob, b.blob);
+        await supabase.storage.from(BUCKET).upload(`${user.id}/${data.id}-og.jpg`, og, { contentType: "image/jpeg", upsert: true });
+      } catch (e) {
+        console.warn("Link preview image failed", e);
+      }
       qc.invalidateQueries({ queryKey: ["questions"] });
       setCreated({ id: data.id, title: title.trim() || "Which one should I buy?" });
     } catch (err) {

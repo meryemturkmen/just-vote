@@ -17,17 +17,33 @@ import {
 import { myShare, verdictLine } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 
+const SITE = "https://just-vote.lovable.app";
+
 export const Route = createFileRoute("/q/$id")({
-  head: () => ({
-    meta: [
-      { title: "Which one?? — Just Vote" },
-      { name: "description", content: "Pick one. No pressure. Your vote decides." },
-      { property: "og:title", content: "Which one?? — Just Vote" },
-      { property: "og:description", content: "Pick one. No pressure. Your vote decides." },
-      { property: "og:type", content: "article" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: ({ params }) => {
+    const url = `${SITE}/q/${params.id}`;
+    const img = `${SITE}/api/public/og/${params.id}`;
+    return {
+      meta: [
+        { title: "Which one would you pick? — Just Vote" },
+        { name: "description", content: "Pick one. No pressure. Tap to vote, no login needed." },
+        { property: "og:title", content: "Which one would you pick?" },
+        { property: "og:description", content: "Pick one. No pressure. Tap to vote, no login needed." },
+        { property: "og:type", content: "article" },
+        { property: "og:url", content: url },
+        { property: "og:site_name", content: "Just Vote" },
+        { property: "og:image", content: img },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { property: "og:image:type", content: "image/jpeg" },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: "Which one would you pick?" },
+        { name: "twitter:description", content: "Pick one. No pressure. Tap to vote, no login needed." },
+        { name: "twitter:image", content: img },
+      ],
+      links: [{ rel: "canonical", href: url }],
+    };
+  },
   component: Detail,
 });
 

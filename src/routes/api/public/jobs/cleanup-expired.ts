@@ -19,13 +19,13 @@ export const Route = createFileRoute("/api/public/jobs/cleanup-expired")({
         for (let i = 0; i < 20; i++) {
           const { data, error } = await supabaseAdmin
             .from("questions")
-            .select("id, option_a_image, option_b_image")
+            .select("id, user_id, option_a_image, option_b_image")
             .lt("ends_at", cutoff)
             .limit(100);
           if (error) return Response.json({ error: error.message }, { status: 500 });
           if (!data.length) break;
 
-          const paths = data.flatMap((q) => [q.option_a_image, q.option_b_image]).filter(Boolean);
+          const paths = data.flatMap((q) => [q.option_a_image, q.option_b_image, `${q.user_id}/${q.id}-og.jpg`]).filter(Boolean);
           if (paths.length) {
             const { error: se } = await supabaseAdmin.storage.from(BUCKET).remove(paths);
             if (se) return Response.json({ error: se.message }, { status: 500 });
