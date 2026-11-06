@@ -24,6 +24,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
+import { Route as JoinCodeRouteImport } from './routes/join.$code'
 import { Route as QIdRouteImport } from './routes/q.$id'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as AuthenticatedCrewsIdRouteImport } from './routes/_authenticated/crews.$id'
@@ -105,6 +106,11 @@ const AuthenticatedStatsRoute = AuthenticatedStatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const JoinCodeRoute = JoinCodeRouteImport.update({
+  id: '/join/$code',
+  path: '/join/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QIdRoute = QIdRouteImport.update({
   id: '/q/$id',
   path: '/q/$id',
@@ -147,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/stats': typeof AuthenticatedStatsRoute
+  '/join/$code': typeof JoinCodeRoute
   '/q/$id': typeof QIdRoute
   '/u/$username': typeof UUsernameRoute
   '/crews/$id': typeof AuthenticatedCrewsIdRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/stats': typeof AuthenticatedStatsRoute
+  '/join/$code': typeof JoinCodeRoute
   '/q/$id': typeof QIdRoute
   '/u/$username': typeof UUsernameRoute
   '/crews/$id': typeof AuthenticatedCrewsIdRoute
@@ -191,6 +199,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
+  '/join/$code': typeof JoinCodeRoute
   '/q/$id': typeof QIdRoute
   '/u/$username': typeof UUsernameRoute
   '/_authenticated/crews/$id': typeof AuthenticatedCrewsIdRoute
@@ -214,6 +223,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/stats'
+    | '/join/$code'
     | '/q/$id'
     | '/u/$username'
     | '/crews/$id'
@@ -235,6 +245,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/stats'
+    | '/join/$code'
     | '/q/$id'
     | '/u/$username'
     | '/crews/$id'
@@ -257,6 +268,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/stats'
+    | '/join/$code'
     | '/q/$id'
     | '/u/$username'
     | '/_authenticated/crews/$id'
@@ -272,6 +284,7 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
+  JoinCodeRoute: typeof JoinCodeRoute
   QIdRoute: typeof QIdRoute
   UUsernameRoute: typeof UUsernameRoute
   ApiPublicJobsCleanupExpiredRoute: typeof ApiPublicJobsCleanupExpiredRoute
@@ -385,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStatsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/join/$code': {
+      id: '/join/$code'
+      path: '/join/$code'
+      fullPath: '/join/$code'
+      preLoaderRoute: typeof JoinCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/q/$id': {
       id: '/q/$id'
       path: '/q/$id'
@@ -467,6 +487,7 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
+  JoinCodeRoute: JoinCodeRoute,
   QIdRoute: QIdRoute,
   UUsernameRoute: UUsernameRoute,
   ApiPublicJobsCleanupExpiredRoute: ApiPublicJobsCleanupExpiredRoute,
