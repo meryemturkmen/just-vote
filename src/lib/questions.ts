@@ -20,6 +20,7 @@ export type Question = {
   budget: string | null;
   visibility: string;
   ends_at: string | null;
+  decided_choice: string | null;
 };
 
 type Row = {
@@ -36,6 +37,7 @@ type Row = {
   budget: string | null;
   visibility: string;
   ends_at: string | null;
+  decided_choice: string | null;
   profiles: { display_name: string | null } | null;
   votes: { choice: string; user_id: string }[];
 };
@@ -67,6 +69,7 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
     budget: r.budget,
     visibility: r.visibility,
     ends_at: r.ends_at,
+    decided_choice: r.decided_choice,
     author: r.profiles?.display_name ?? "Someone",
     votesA: r.votes.filter((v) => v.choice === "a").length,
     votesB: r.votes.filter((v) => v.choice === "b").length,
@@ -231,4 +234,16 @@ export async function fetchFeedPage(opts: {
     const h = byId.get(r.id);
     return h ? [{ ...h, matched: r.matched }] : [];
   });
+}
+
+export async function decideQuestion(id: string, choice: "a" | "b" | "neither") {
+  const { error } = await supabase.rpc("decide_question", { p_question: id, p_choice: choice });
+  if (error) throw error;
+}
+
+export function decisionLabel(choice: string | null) {
+  if (choice === "a") return "Went with A";
+  if (choice === "b") return "Went with B";
+  if (choice === "neither") return "Chose neither";
+  return null;
 }

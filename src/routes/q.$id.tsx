@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
   COMMENT_MAX, FEEDBACK_TAGS, castVote, displayTitle, fetchFeedback, fetchQuestion,
-  isClosed, myVoterId, percent, sendFeedback, shareQuestion, timeLeft, type Question,
+  isClosed, myVoterId, decisionLabel, percent, sendFeedback, shareQuestion, timeLeft, type Question,
 } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 
@@ -140,9 +140,13 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: "a" | "b") =>
 function Results({ q }: { q: Question }) {
   const [pa, pb] = percent(q.votesA, q.votesB);
   const total = q.votesA + q.votesB;
-  const lead = total === 0 ? "No votes yet" : pa === pb ? "It's a tie!" : pa > pb ? "A is winning" : "B is winning";
+  const closed = isClosed(q);
+  const decided = decisionLabel(q.decided_choice);
+  const lead = total === 0 ? "No votes yet" : pa === pb ? "It's a tie!" : closed ? (pa > pb ? "A won" : "B won") : pa > pb ? "A is winning" : "B is winning";
   return (
     <section className="mt-6 rounded-3xl bg-primary-soft p-5">
+      {closed && <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-accent-foreground">Final results</p>}
+      {decided && <p className="mb-3 inline-flex rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">The asker {decided.toLowerCase()} 🎉</p>}
       <div className="flex items-baseline justify-between">
         <p className="font-display text-lg font-semibold">{lead}</p>
         <p className="text-sm font-medium text-muted-foreground">{total} {total === 1 ? "vote" : "votes"}</p>

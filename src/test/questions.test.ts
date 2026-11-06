@@ -26,3 +26,17 @@ describe("vote feedback", () => {
     expect(COMMENT_MAX).toBe(140);
   });
 });
+
+import { decisionLabel } from "@/lib/questions";
+import { notificationText } from "@/lib/notifications";
+describe("decisions and notifications", () => {
+  it("labels the asker's choice", () => {
+    expect(decisionLabel("a")).toBe("Went with A");
+    expect(decisionLabel("neither")).toBe("Chose neither");
+    expect(decisionLabel(null)).toBeNull();
+  });
+  it("describes notifications", () => {
+    expect(notificationText({ kind: "votes", count: 3 })).toBe("3 new votes");
+    expect(notificationText({ kind: "votes", count: 1 })).toBe("1 new vote");
+  });
+});

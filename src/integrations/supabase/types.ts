@@ -14,6 +14,47 @@ export type Database = {
   }
   public: {
     Tables: {
+      notifications: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          kind: string
+          question_id: string
+          read: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind: string
+          question_id: string
+          read?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          question_id?: string
+          read?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -43,6 +84,8 @@ export type Database = {
           budget: string | null
           category: string
           created_at: string
+          decided_at: string | null
+          decided_choice: string | null
           duration_hours: number
           ends_at: string | null
           id: string
@@ -59,6 +102,8 @@ export type Database = {
           budget?: string | null
           category?: string
           created_at?: string
+          decided_at?: string | null
+          decided_choice?: string | null
           duration_hours?: number
           ends_at?: string | null
           id?: string
@@ -75,6 +120,8 @@ export type Database = {
           budget?: string | null
           category?: string
           created_at?: string
+          decided_at?: string | null
+          decided_choice?: string | null
           duration_hours?: number
           ends_at?: string | null
           id?: string
@@ -175,6 +222,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decide_question: {
+        Args: { p_choice: string; p_question: string }
+        Returns: undefined
+      }
       feed_page: {
         Args: {
           p_category: string
@@ -189,6 +240,7 @@ export type Database = {
           matched: boolean
         }[]
       }
+      sync_ended_notifications: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
