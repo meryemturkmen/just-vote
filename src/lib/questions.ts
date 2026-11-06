@@ -21,6 +21,7 @@ export type Question = {
   visibility: string;
   ends_at: string | null;
   decided_choice: string | null;
+  boosted_until: string | null;
 };
 
 type Row = {
@@ -38,6 +39,7 @@ type Row = {
   visibility: string;
   ends_at: string | null;
   decided_choice: string | null;
+  boosted_until: string | null;
   profiles: { display_name: string | null } | null;
   votes: { choice: string; user_id: string }[];
 };
@@ -70,6 +72,7 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
     visibility: r.visibility,
     ends_at: r.ends_at,
     decided_choice: r.decided_choice,
+    boosted_until: r.boosted_until,
     author: r.profiles?.display_name ?? "Someone",
     votesA: r.votes.filter((v) => v.choice === "a").length,
     votesB: r.votes.filter((v) => v.choice === "b").length,
@@ -246,4 +249,45 @@ export function decisionLabel(choice: string | null) {
   if (choice === "b") return "Went with B";
   if (choice === "neither") return "Chose neither";
   return null;
+}
+
+export const BOOST_COST = 10;
+
+/** Points for one vote: 2 in a category the voter is interested in, otherwise 1. */
+export function votePoints(category: string, interests: string[]) {
+  return interests.includes(category) ? 2 : 1;
+}
+
+export function isBoosted(q: { boosted_until: string | null }, now = Date.now()) {
+  return !!q.boosted_until && new Date(q.boosted_until).getTime() > now;
+}
+
+export async function boostQuestion(id: string) {
+  const { error } = await supabase.rpc("boost_question", { p_question: id });
+  if (error) throw error;
+}
+
+export async function fetchMyStats() {
+  const { data, error } = await supabase.rpc("my_stats");
+  if (error) throw error;
+  return data?.[0] ?? { points: 0, streak: 0 };
+}
+
+export const REPORT_REASONS = [
+  { value: "inappropriate", label: "Inappropriate content" },
+  { value: "faces_without_consent", label: "Shows people without permission" },
+  { value: "spam", label: "Spam or advertising" },
+  { value: "other", label: "Something else" },
+] as const;
+
+export async function reportQuestion(questionId: string, reason: string, details: string) {
+  const { id, anonymous } = await myVoterId();
+  if (!id) throw new Error("Not available right now");
+  const { error } = await supabase
+    .from("reports")
+    .insert({ question_id: questionId, reporter_id: id, anonymous, reason, details: details.trim() || null });
+  if (error) {
+    if (error.code === "23505") throw new Error("You already reported this question");
+    throw error;
+  }
 }
