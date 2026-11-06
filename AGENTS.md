@@ -30,3 +30,5 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - Data reads/writes go through the browser client in src/lib/questions.ts with React Query; question photos live in a private bucket and are shown via signed URLs (workspace blocks public buckets).
+- Points live in an append-only ledger written only by DB triggers/security-definer functions (votes award, boost spends); balance = sum, never client-written.
+- Expired-content cleanup runs as a daily managed HTTP schedule hitting /api/public/jobs/cleanup-expired (storage files need the Storage API, not SQL).
