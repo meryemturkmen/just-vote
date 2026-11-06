@@ -51,3 +51,20 @@ describe("points", () => {
     expect(BOOST_COST).toBe(10);
   });
 });
+
+import { optionLabel, percentAll, QUESTION_KINDS } from "@/lib/questions";
+describe("question types", () => {
+  it("offers A vs B (2 photos), A vs B vs C (3-4 photos) and Buy it or skip it (1 photo)", () => {
+    expect(QUESTION_KINDS.map((k) => [k.value, k.min, k.max])).toEqual([["ab", 2, 2], ["multi", 3, 4], ["buyskip", 1, 1]]);
+  });
+  it("labels buy-or-skip options", () => {
+    expect(optionLabel("buyskip", "a")).toBe("Buy it");
+    expect(optionLabel("buyskip", "b")).toBe("Skip it");
+    expect(optionLabel("multi", "c")).toBe("C");
+  });
+  it("splits percentages across up to 4 options adding to 100", () => {
+    expect(percentAll([1, 1, 1])).toEqual([34, 33, 33]);
+    expect(percentAll([2, 1, 1, 0])).toEqual([50, 25, 25, 0]);
+    expect(percentAll([0, 0])).toEqual([0, 0]);
+  });
+});

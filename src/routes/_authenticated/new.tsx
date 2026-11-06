@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/new")({
       { title: "New question — Just Vote" },
       { name: "description", content: "Upload two, three or four products — or one to buy or skip — and let people vote." },
       { property: "og:title", content: "New question — Just Vote" },
-      { property: "og:description", content: "Upload two products and let people vote." },
+      { property: "og:description", content: "Upload two, three or four products — or one to buy or skip — and let people vote." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

@@ -1,10 +1,11 @@
-import { percent, type Question, displayTitle } from "@/lib/questions";
+import { type Question, displayTitle } from "@/lib/questions";
 
 const INK = "#141414";
 const BG = "#fbf7e8";
 const PINK = "#ff3d9a";
 const YELLOW = "#f5e93a";
 const LIME = "#b6f23a";
+const FILLS: Record<string, string> = { a: YELLOW, b: LIME, c: PINK, d: "#fff" };
 
 function loadImage(src: string) {
   return new Promise<HTMLImageElement | null>((resolve) => {
@@ -93,48 +94,60 @@ export async function renderStoryCard(q: Question): Promise<Blob> {
   ctx.textAlign = "center";
   wrap(ctx, displayTitle(q), 900).forEach((l, i) => ctx.fillText(l, W / 2, 330 + i * 86));
 
-  const [imgA, imgB] = await Promise.all([loadImage(q.option_a_url), loadImage(q.option_b_url)]);
-  const pw = 440, ph = 600, py = 560;
-  const slots = [
-    { img: imgA, x: 70, rot: -0.04, label: "A" },
-    { img: imgB, x: 570, rot: 0.04, label: "B" },
-  ];
-  for (const s of slots) {
+  const photoOpts = q.kind === "buyskip" ? q.options.slice(0, 1) : q.options;
+  const imgs = await Promise.all(photoOpts.map((o) => loadImage(o.url)));
+  const n = imgs.length;
+  // photo area: y 520..1240
+  const area = { x: 70, y: 520, w: 940, h: 700 };
+  const cols = n === 1 ? 1 : 2;
+  const rows = n > 2 ? 2 : 1;
+  const gap = 40;
+  const cw = n === 1 ? 560 : (area.w - gap) / cols;
+  const ch = (area.h - gap * (rows - 1)) / rows;
+  imgs.forEach((img, i) => {
+    const r = Math.floor(i / cols), col = i % cols;
+    const wide = n === 3 && i === 2;
+    const w = wide ? area.w : cw;
+    const x = n === 1 ? (W - cw) / 2 : wide ? area.x : area.x + col * (cw + gap);
+    const y = area.y + r * (ch + gap);
+    const rot = (i % 2 ? 1 : -1) * 0.035;
     ctx.save();
-    ctx.translate(s.x + pw / 2, py + ph / 2);
-    ctx.rotate(s.rot);
-    brutBox(ctx, -pw / 2, -ph / 2, pw, ph, "#fff", 32, 16);
-    if (s.img) drawCover(ctx, s.img, -pw / 2 + 3, -ph / 2 + 3, pw - 6, ph - 6, 30);
+    ctx.translate(x + w / 2, y + ch / 2);
+    ctx.rotate(rot);
+    brutBox(ctx, -w / 2, -ch / 2, w, ch, "#fff", 32, 14);
+    if (img) drawCover(ctx, img, -w / 2 + 3, -ch / 2 + 3, w - 6, ch - 6, 30);
     ctx.restore();
-    sticker(ctx, s.label, s.x + 60, py + 40, s.label === "A" ? YELLOW : LIME, -0.1, 70);
-  }
-  sticker(ctx, "VS", W / 2, py + ph / 2, PINK, 0.08, 64);
+    if (q.kind !== "buyskip") sticker(ctx, photoOpts[i].label, x + 56, y + 40, FILLS[photoOpts[i].key], -0.1, 60);
+  });
+  if (n === 2) sticker(ctx, "VS", W / 2, area.y + area.h / 2, PINK, 0.08, 64);
+  if (q.kind === "buyskip") sticker(ctx, "BUY OR SKIP?", W / 2, area.y + area.h - 10, PINK, -0.05, 60);
 
-  const [pa, pb] = percent(q.votesA, q.votesB);
-  const bars = [
-    { label: "A", pct: pa, color: YELLOW, y: 1300 },
-    { label: "B", pct: pb, color: LIME, y: 1440 },
-  ];
-  for (const b of bars) {
-    brutBox(ctx, 90, b.y, 900, 110, "#fff", 24, 10);
+  const barsTop = 1280;
+  const nb = q.options.length;
+  const bh = nb > 2 ? 78 : 110;
+  const step = nb > 2 ? 96 : 140;
+  const font = nb > 2 ? 44 : 56;
+  q.options.forEach((o, i) => {
+    const y = barsTop + i * step;
+    brutBox(ctx, 90, y, 900, bh, "#fff", 22, 8);
     ctx.save();
-    roundRect(ctx, 93, b.y + 3, 894, 104, 22);
+    roundRect(ctx, 93, y + 3, 894, bh - 6, 20);
     ctx.clip();
-    ctx.fillStyle = b.color;
-    ctx.fillRect(93, b.y + 3, (894 * b.pct) / 100, 104);
+    ctx.fillStyle = q.kind === "buyskip" ? (o.key === "a" ? LIME : PINK) : FILLS[o.key] === "#fff" ? "#d9d2b4" : FILLS[o.key];
+    ctx.fillRect(93, y + 3, (894 * o.pct) / 100, bh - 6);
     ctx.restore();
     ctx.fillStyle = INK;
-    ctx.font = `800 56px "Bricolage Grotesque", sans-serif`;
+    ctx.font = `800 ${font}px "Bricolage Grotesque", sans-serif`;
     ctx.textAlign = "left";
-    ctx.fillText(`Option ${b.label}`, 130, b.y + 75);
+    ctx.fillText(q.kind === "buyskip" ? o.label : `Option ${o.label}`, 130, y + bh / 2 + font * 0.35);
     ctx.textAlign = "right";
-    ctx.fillText(`${b.pct}%`, 950, b.y + 75);
-  }
-  const total = q.votesA + q.votesB;
+    ctx.fillText(`${o.pct}%`, 950, y + bh / 2 + font * 0.35);
+  });
+  const total = q.options.reduce((s, o) => s + o.votes, 0);
   ctx.textAlign = "center";
   ctx.font = `700 44px "DM Sans", sans-serif`;
-  ctx.fillText(`${total} ${total === 1 ? "vote" : "votes"} so far · you decide 👇`, W / 2, 1650);
-  sticker(ctx, "justvote • tap the link", W / 2, 1780, YELLOW, -0.03, 48);
+  ctx.fillText(`${total} ${total === 1 ? "vote" : "votes"} so far · you decide 👇`, W / 2, 1690);
+  sticker(ctx, "justvote • tap the link", W / 2, 1800, YELLOW, -0.03, 48);
 
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("Couldn't make the image"))), "image/png"));
 }
@@ -160,8 +173,8 @@ export async function shareStoryCard(q: Question) {
   return "downloaded";
 }
 
-/** Render a 1200x630 link-preview JPEG (both photos side by side + wordmark) from local photo blobs. */
-export async function renderPreviewCard(a: Blob, b: Blob): Promise<Blob> {
+/** Render a 1200x630 link-preview JPEG (all photos side by side + wordmark) from local photo blobs. */
+export async function renderPreviewCard(blobs: Blob[]): Promise<Blob> {
   await document.fonts?.ready;
   const W = 1200, H = 630;
   const c = document.createElement("canvas");
@@ -169,24 +182,26 @@ export async function renderPreviewCard(a: Blob, b: Blob): Promise<Blob> {
   const ctx = c.getContext("2d")!;
   ctx.fillStyle = YELLOW;
   ctx.fillRect(0, 0, W, H);
-  const ua = URL.createObjectURL(a), ub = URL.createObjectURL(b);
-  const [imgA, imgB] = await Promise.all([loadImage(ua), loadImage(ub)]);
-  URL.revokeObjectURL(ua); URL.revokeObjectURL(ub);
-  const pw = 500, ph = 470, py = 40;
-  const slots = [
-    { img: imgA, x: 60, rot: -0.035, label: "A", fill: PINK },
-    { img: imgB, x: 640, rot: 0.035, label: "B", fill: LIME },
-  ];
-  for (const s of slots) {
+  const urls = blobs.map((b) => URL.createObjectURL(b));
+  const imgs = await Promise.all(urls.map(loadImage));
+  urls.forEach((u) => URL.revokeObjectURL(u));
+  const n = imgs.length;
+  const gap = 30, top = 40, ph = 470;
+  const pw = n === 1 ? 520 : (W - 120 - gap * (n - 1)) / n;
+  const startX = n === 1 ? (W - pw) / 2 : 60;
+  const fills = [PINK, LIME, "#fff", PINK];
+  imgs.forEach((img, i) => {
+    const x = startX + i * (pw + gap);
     ctx.save();
-    ctx.translate(s.x + pw / 2, py + ph / 2);
-    ctx.rotate(s.rot);
+    ctx.translate(x + pw / 2, top + ph / 2);
+    ctx.rotate((i % 2 ? 1 : -1) * 0.035);
     brutBox(ctx, -pw / 2, -ph / 2, pw, ph, "#fff", 28, 12);
-    if (s.img) drawCover(ctx, s.img, -pw / 2 + 3, -ph / 2 + 3, pw - 6, ph - 6, 26);
+    if (img) drawCover(ctx, img, -pw / 2 + 3, -ph / 2 + 3, pw - 6, ph - 6, 26);
     ctx.restore();
-    sticker(ctx, s.label, s.x + 50, py + 40, s.fill, -0.1, 56);
-  }
-  sticker(ctx, "VS", W / 2, py + ph / 2, PINK, 0.08, 56);
+    if (n > 1) sticker(ctx, "ABCD"[i], x + 46, top + 40, fills[i], -0.1, n > 2 ? 46 : 56);
+  });
+  if (n === 2) sticker(ctx, "VS", W / 2, top + ph / 2, PINK, 0.08, 56);
+  if (n === 1) sticker(ctx, "BUY OR SKIP?", W / 2, top + ph - 20, PINK, -0.05, 48);
   sticker(ctx, "JUST", 520, 570, INK, -0.06, 52);
   sticker(ctx, "VOTE!", 690, 578, PINK, 0.05, 52);
   return new Promise((res, rej) => c.toBlob((bl) => (bl ? res(bl) : rej(new Error("preview failed"))), "image/jpeg", 0.85));
