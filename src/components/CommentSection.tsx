@@ -13,7 +13,7 @@ import {
   COMMENT_LIMIT, REACTIONS, fetchComments, postComment, reportComment, setCommentHidden, sortComments, toggleReaction,
   type Comment, type CommentSort,
 } from "@/lib/comments";
-import { FEEDBACK_TAGS, type Question } from "@/lib/questions";
+import { FEEDBACK_TAGS, OPTION_COLORS, type Question } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 
 /** Full comments section; only rendered once the viewer has voted. */

@@ -113,7 +113,7 @@ function ReportCard({ group, onChange }: { group: { id: string; reports: Report[
           </div>
           <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-lg font-extrabold leading-tight underline">{displayTitle(q)}</Link>
           <div className="mt-3 grid grid-cols-2 gap-2">
-            {[q.option_a_url, q.option_b_url].map((u, i) => (
+            {[...new Set(q.options.map((o) => o.url))].map((u, i) => (
               <img key={i} src={u} alt={`Option ${i ? "B" : "A"}`} className="aspect-square w-full rounded-xl border-2 object-cover" />
             ))}
           </div>
