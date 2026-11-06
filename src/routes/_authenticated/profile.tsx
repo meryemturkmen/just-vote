@@ -129,7 +129,10 @@ function Profile() {
         <p className="font-display font-semibold">Legal stuff</p>
         <LegalLinks className="mt-3 justify-start text-sm" />
         {isAdmin.data && (
-          <Button asChild variant="hero" className="mt-4 h-11 w-full"><Link to="/admin">Reports admin 🚨</Link></Button>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <Button asChild variant="hero" className="h-11"><Link to="/admin">Reports 🚨</Link></Button>
+            <Button asChild variant="lime" className="h-11"><Link to="/stats">Stats 📊</Link></Button>
+          </div>
         )}
       </div>
       <div className="mt-6 rounded-2xl border-2 bg-destructive/10 p-4">
