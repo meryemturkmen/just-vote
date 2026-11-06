@@ -116,6 +116,7 @@ export type Database = {
           decided_choice: string | null
           duration_hours: number
           ends_at: string | null
+          hidden: boolean
           id: string
           occasion: string | null
           option_a_image: string
@@ -135,6 +136,7 @@ export type Database = {
           decided_choice?: string | null
           duration_hours?: number
           ends_at?: string | null
+          hidden?: boolean
           id?: string
           occasion?: string | null
           option_a_image: string
@@ -154,6 +156,7 @@ export type Database = {
           decided_choice?: string | null
           duration_hours?: number
           ends_at?: string | null
+          hidden?: boolean
           id?: string
           occasion?: string | null
           option_a_image?: string
@@ -220,6 +223,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
       }
       vote_feedback: {
         Row: {
@@ -318,6 +339,14 @@ export type Database = {
           matched: boolean
         }[]
       }
+      has_profanity: { Args: { t: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       my_stats: {
         Args: never
         Returns: {
@@ -328,7 +357,7 @@ export type Database = {
       sync_ended_notifications: { Args: never; Returns: undefined }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -455,6 +484,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
