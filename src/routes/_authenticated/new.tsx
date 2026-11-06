@@ -134,15 +134,15 @@ function NewQuestion() {
         </Section>
 
         <Section label="Title" hint="optional">
-          <Input className="h-12 rounded-2xl" placeholder='"Which one for the wedding?"' value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
+          <Input className="h-12 rounded-xl bg-card" placeholder='"Which one for the wedding?"' value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
         </Section>
 
         <div className="grid grid-cols-2 gap-3">
           <Section label="Occasion" hint="optional">
-            <Input className="h-12 rounded-2xl" placeholder="e.g. Wedding" value={occasion} onChange={(e) => setOccasion(e.target.value)} maxLength={40} />
+            <Input className="h-12 rounded-xl bg-card" placeholder="e.g. Wedding" value={occasion} onChange={(e) => setOccasion(e.target.value)} maxLength={40} />
           </Section>
           <Section label="Budget" hint="optional">
-            <Input className="h-12 rounded-2xl" placeholder="e.g. up to €150" value={budget} onChange={(e) => setBudget(e.target.value)} maxLength={30} />
+            <Input className="h-12 rounded-xl bg-card" placeholder="e.g. up to €150" value={budget} onChange={(e) => setBudget(e.target.value)} maxLength={30} />
           </Section>
         </div>
 
@@ -153,7 +153,7 @@ function NewQuestion() {
                 key={d.h}
                 type="button"
                 onClick={() => setDuration(d.h)}
-                className={cn("rounded-full py-2.5 text-sm font-medium transition", duration === d.h ? "bg-ink text-background" : "text-muted-foreground")}
+                className={cn("rounded-lg py-2.5 text-sm font-extrabold", duration === d.h ? "bg-ink text-background" : "text-muted-foreground")}
               >
                 {d.label}
               </button>
@@ -212,23 +212,23 @@ function PhotoPicker({ name, photo, set }: { name: string; photo: Photo; set: (p
         {photo ? (
           <>
             <img src={photo.preview} alt={`Option ${name}`} className="size-full object-cover" />
-            <button type="button" aria-label={`Remove photo ${name}`} onClick={() => set(null)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-card/90 text-foreground">
+            <button type="button" aria-label={`Remove photo ${name}`} onClick={() => set(null)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-md bg-card brut-sm">
               <X className="size-4" />
             </button>
-            <span className="absolute left-2 top-2 grid size-8 place-items-center rounded-full bg-primary font-display font-bold text-foreground">{name}</span>
+            <span className="absolute left-2 top-2 grid size-9 place-items-center rounded-md bg-yellow font-display text-lg font-extrabold brut-sm tilt-l">{name}</span>
           </>
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-3 p-3">
-            <span className="font-display text-3xl font-bold text-foreground">{name}</span>
+            <span className="font-display text-5xl font-extrabold">{name}</span>
             {working ? (
               <p className="text-xs text-muted-foreground">Shrinking…</p>
             ) : (
               <div className="flex w-full flex-col gap-2">
-                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-full bg-card py-2 text-xs font-semibold">
+                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-card py-2.5 text-xs font-extrabold brut-sm press">
                   <Camera className="size-4 text-foreground" /> Camera
                   <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={onFile} aria-label={`Take photo ${name}`} />
                 </label>
-                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-full bg-card py-2 text-xs font-semibold">
+                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-card py-2.5 text-xs font-extrabold brut-sm press">
                   <ImagePlus className="size-4 text-foreground" /> Gallery
                   <input type="file" accept="image/*" className="sr-only" onChange={onFile} aria-label={`Choose photo ${name}`} />
                 </label>

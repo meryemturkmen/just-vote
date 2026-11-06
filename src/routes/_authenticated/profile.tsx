@@ -98,7 +98,7 @@ function Profile() {
       </div>
       <div className="mt-6 space-y-3">
         <label className="text-sm font-medium">Display name</label>
-        <Input className="h-12 rounded-2xl" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
+        <Input className="h-12 rounded-xl bg-card" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
         <Button variant="hero" className="h-12 w-full" onClick={save}>Save</Button>
         <Button variant="soft" className="h-12 w-full" onClick={signOut}>Log out</Button>
       </div>

@@ -67,7 +67,7 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
         {!closed && <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground"><span className="size-1.5 animate-pulse rounded-full bg-primary" /> Live</span>}
         <span className="ml-auto text-[11px] font-medium text-muted-foreground">{decided ?? timeLeft(q.ends_at)}</span>
       </div>
-      <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-lg font-semibold leading-snug">
+      <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-xl font-extrabold leading-tight">
         {displayTitle(q)}
       </Link>
       <div className="mt-3 grid grid-cols-2 gap-3">
@@ -76,15 +76,15 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
           const url = c === "a" ? q.option_a_url : q.option_b_url;
           const chosen = q.decided_choice === c;
           return (
-            <div key={c} className={cn("overflow-hidden rounded-2xl bg-muted ring-2 ring-transparent", chosen && "ring-primary")}>
+            <div key={c} className={cn("overflow-hidden rounded-xl bg-card brut-sm", chosen && "ring-4 ring-primary ring-offset-2")}>
               <div className="relative aspect-square">
                 {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="size-full object-cover" />}
-                <span className="absolute left-2 top-2 grid size-7 place-items-center rounded-full bg-card text-xs font-bold">{c.toUpperCase()}</span>
-                {chosen && <CheckCircle2 className="absolute right-2 top-2 size-6 rounded-full bg-card text-foreground" />}
+                <span className="absolute left-2 top-2 grid size-7 place-items-center rounded-md bg-yellow text-xs font-extrabold brut-sm">{c.toUpperCase()}</span>
+                {chosen && <CheckCircle2 className="absolute right-2 top-2 size-7 rounded-full bg-lime text-foreground" />}
               </div>
               <div className="p-2.5">
-                <div className="h-2 overflow-hidden rounded-full bg-border">
-                  <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${pct}%` }} />
+                <div className="h-3 overflow-hidden rounded-full border-2 bg-card">
+                  <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${pct}%` }} />
                 </div>
                 <p className="mt-1 text-sm font-semibold">{pct}%</p>
               </div>
@@ -135,10 +135,10 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
                   type="button"
                   disabled={decide.isPending}
                   onClick={() => decide.mutate(c)}
-                  className="relative overflow-hidden rounded-2xl bg-muted active:scale-95 transition"
+                  className="relative overflow-hidden rounded-xl bg-muted brut press"
                 >
                   <img src={c === "a" ? q.option_a_url : q.option_b_url} alt={`Option ${c.toUpperCase()}`} className="aspect-square w-full object-cover" />
-                  <span className="absolute left-2 top-2 grid size-8 place-items-center rounded-full bg-card font-bold">{c.toUpperCase()}</span>
+                  <span className="absolute left-2 top-2 grid size-8 place-items-center rounded-md bg-yellow font-extrabold brut-sm">{c.toUpperCase()}</span>
                 </button>
               ))}
             </div>

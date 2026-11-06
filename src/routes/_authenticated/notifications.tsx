@@ -49,7 +49,7 @@ function Notifications() {
                 <p className="truncate text-sm font-semibold">{n.title}</p>
                 <p className="text-xs text-muted-foreground">{notificationText(n)}</p>
               </div>
-              {!n.read && <span className="ml-auto size-2 shrink-0 rounded-full bg-primary" />}
+              {!n.read && <span className="ml-auto shrink-0 rounded-md bg-primary px-1.5 text-[10px] font-extrabold uppercase brut-sm">new</span>}
             </Link>
           </li>
         ))}
