@@ -70,8 +70,9 @@ function Feed() {
   }, [feed.hasNextPage, feed.isFetchingNextPage, feed.fetchNextPage]);
 
   return (
+    <>
+    <WelcomeIntro onDone={() => setGuestInterests(readGuestInterests())} />
     <AppShell bleed>
-      <WelcomeIntro onDone={() => setGuestInterests(readGuestInterests())} />
       <div className="flex h-[calc(100dvh-70px)] flex-col">
         <div className="border-b-2 bg-background px-4 py-2.5">
           <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 pt-0.5">
@@ -127,6 +128,7 @@ function Feed() {
         </div>
       </div>
     </AppShell>
+    </>
   );
 }
 
