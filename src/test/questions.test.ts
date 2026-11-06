@@ -18,3 +18,11 @@ describe("voting window", () => {
     expect(displayTitle({ title: "  " })).toBe("Which one should I buy?");
   });
 });
+
+import { COMMENT_MAX, FEEDBACK_TAGS } from "@/lib/questions";
+describe("vote feedback", () => {
+  it("offers the five quick tags and a 140-char comment", () => {
+    expect([...FEEDBACK_TAGS]).toEqual(["Design", "Quality", "Price", "Style", "Features"]);
+    expect(COMMENT_MAX).toBe(140);
+  });
+});

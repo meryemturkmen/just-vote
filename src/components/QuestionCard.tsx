@@ -26,7 +26,7 @@ export function QuestionCard({ q, linked = true }: { q: Question; linked?: boole
     return (
       <button
         type="button"
-        disabled={vote.isPending || closed}
+        disabled={vote.isPending || closed || q.myVote !== null}
         onClick={() => vote.mutate(c)}
         className={cn(
           "group relative overflow-hidden rounded-2xl bg-muted text-left ring-2 ring-transparent transition",

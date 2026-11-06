@@ -97,6 +97,44 @@ export type Database = {
           },
         ]
       }
+      vote_feedback: {
+        Row: {
+          anonymous: boolean
+          comment: string | null
+          created_at: string
+          id: string
+          question_id: string
+          tags: string[]
+          voter_id: string
+        }
+        Insert: {
+          anonymous?: boolean
+          comment?: string | null
+          created_at?: string
+          id?: string
+          question_id: string
+          tags?: string[]
+          voter_id: string
+        }
+        Update: {
+          anonymous?: boolean
+          comment?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string
+          tags?: string[]
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vote_feedback_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       votes: {
         Row: {
           anonymous: boolean

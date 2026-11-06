@@ -115,8 +115,45 @@ export async function castVote(questionId: string, choice: "a" | "b") {
   if (!uid) throw new Error("Voting isn't available right now");
   const { error } = await supabase
     .from("votes")
-    .upsert({ question_id: questionId, user_id: uid, choice, anonymous: !session }, { onConflict: "question_id,user_id" });
+    .insert({ question_id: questionId, user_id: uid, choice, anonymous: !session });
+  if (error) {
+    if (error.code === "23505") throw new Error("You already voted on this one");
+    throw error;
+  }
+}
+
+export const FEEDBACK_TAGS = ["Design", "Quality", "Price", "Style", "Features"] as const;
+export const COMMENT_MAX = 140;
+
+export type Feedback = { id: string; voter_id: string; tags: string[]; comment: string | null; created_at: string };
+
+export async function fetchFeedback(questionId: string): Promise<Feedback[]> {
+  const { data, error } = await supabase
+    .from("vote_feedback")
+    .select("id, voter_id, tags, comment, created_at")
+    .eq("question_id", questionId)
+    .order("created_at", { ascending: false });
   if (error) throw error;
+  return data;
+}
+
+export async function myVoterId() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return { id: session?.user.id ?? guestId(), anonymous: !session };
+}
+
+export async function sendFeedback(questionId: string, tags: string[], comment: string) {
+  const trimmed = comment.trim();
+  if (trimmed.length > COMMENT_MAX) throw new Error(`Max ${COMMENT_MAX} characters`);
+  const { id, anonymous } = await myVoterId();
+  if (!id) throw new Error("Not available right now");
+  const { error } = await supabase
+    .from("vote_feedback")
+    .insert({ question_id: questionId, voter_id: id, anonymous, tags, comment: trimmed || null });
+  if (error) {
+    if (error.code === "23505") throw new Error("You already left feedback");
+    throw error;
+  }
 }
 
 export function percent(a: number, b: number) {
