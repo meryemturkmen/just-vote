@@ -105,9 +105,9 @@ export const adminDeleteQuestion = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: q } = await supabaseAdmin.from("questions").select("id, user_id, option_a_image, option_b_image").eq("id", data.id).maybeSingle();
+    const { data: q } = await supabaseAdmin.from("questions").select("id, user_id, option_a_image, option_b_image, option_c_image, option_d_image").eq("id", data.id).maybeSingle();
     if (!q) return { ok: true };
-    await supabaseAdmin.storage.from(BUCKET).remove([q.option_a_image, q.option_b_image, `${q.user_id}/${q.id}-og.jpg`]);
+    await supabaseAdmin.storage.from(BUCKET).remove([q.option_a_image, q.option_b_image, q.option_c_image, q.option_d_image, `${q.user_id}/${q.id}-og.jpg`]);
     const { error } = await supabaseAdmin.from("questions").delete().eq("id", q.id);
     if (error) throw new Error(error.message);
     return { ok: true };

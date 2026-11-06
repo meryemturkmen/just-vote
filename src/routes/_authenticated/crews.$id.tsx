@@ -7,7 +7,7 @@ import { AvatarSticker } from "@/components/Avatar";
 import { Button } from "@/components/ui/button";
 import { ListSkeleton } from "@/components/Skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { displayTitle, fetchCrewQuestions, isClosed, percent, timeLeft } from "@/lib/questions";
+import { displayTitle, fetchCrewQuestions, isClosed, timeLeft } from "@/lib/questions";
 import { inviteUrl } from "@/lib/social";
 
 export const Route = createFileRoute("/_authenticated/crews/$id")({

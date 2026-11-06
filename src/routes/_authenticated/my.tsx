@@ -9,7 +9,7 @@ import { ListSkeleton } from "@/components/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import {
-  BOOST_COST, boostQuestion, isBoosted, decideQuestion, decisionLabel, displayTitle, fetchMine, isClosed, percent, timeLeft, type Question,
+  BOOST_COST, boostQuestion, isBoosted, decideQuestion, decisionLabel, displayTitle, fetchMine, isClosed, OPTION_COLORS, timeLeft, totals, type Choice, type Question,
 } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 
