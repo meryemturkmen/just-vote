@@ -91,7 +91,7 @@ function CrewPage() {
       </div>
       <div className="mt-4 grid grid-cols-2 gap-2">
         <Button variant="soft" className="h-12" onClick={invite}><Share2 /> Invite</Button>
-        <Button asChild variant="hero" className="h-12"><Link to="/new" search={{ crew: id } as never}><Plus /> Ask crew</Link></Button>
+        <Button asChild variant="hero" className="h-12"><Link to="/new" search={{ crew: id }}><Plus /> Ask crew</Link></Button>
       </div>
 
       <h2 className="mt-8 text-xl">Crew dilemmas</h2>
