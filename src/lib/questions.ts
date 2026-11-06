@@ -1,3 +1,4 @@
+import { logShareEvent, type ShareChannel } from "@/lib/share-events";
 import { hasProfanity, PROFANITY_MSG, friendlyDbError } from "@/lib/profanity";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -132,7 +133,10 @@ export async function castVote(questionId: string, choice: "a" | "b") {
     if (/closed|ended|expired/i.test(error.message)) throw new Error("Too late! Voting on this one already ended ⏰");
     throw new Error("Vote didn't go through. Try again?");
   }
-  if (typeof window !== "undefined") window.dispatchEvent(new Event("jv:voted"));
+  if (typeof window !== "undefined") {
+    window.__lovableEvents?.track?.("project.vote_cast", { choice, signed_in: !!session });
+    window.dispatchEvent(new Event("jv:voted"));
+  }
 }
 
 export const FEEDBACK_TAGS = ["Design", "Quality", "Price", "Style", "Features"] as const;
@@ -197,11 +201,13 @@ export function displayTitle(q: { title: string }) {
 }
 
 export function shareUrl(id: string) {
-  return `${window.location.origin}/q/${id}`;
+  return `${window.location.origin}/q/${id}?s=1`;
 }
 
-export async function shareQuestion(id: string, title: string) {
+export async function shareQuestion(id: string, title: string, channel: ShareChannel = "link") {
   const url = shareUrl(id);
+  logShareEvent("share_click", id, channel);
+  window.__lovableEvents?.track?.("project.share_clicked", { channel });
   const text = `${title} Help me decide on Just Vote 🗳️`;
   if (navigator.share) {
     try {

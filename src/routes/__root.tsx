@@ -143,6 +143,10 @@ function RootComponent() {
         setTimeout(async () => {
           const { data: p } = await supabase.from("profiles").select("onboarded").eq("id", session.user.id).maybeSingle();
           if (p && !p.onboarded && router.state.location.pathname !== "/onboarding") {
+            if (!sessionStorage.getItem("jv-signup-tracked")) {
+              sessionStorage.setItem("jv-signup-tracked", "1");
+              window.__lovableEvents?.track?.("project.sign_up", { method: session.user.app_metadata?.provider === "google" ? "google" : "email" });
+            }
             router.navigate({ to: "/onboarding" });
           }
         }, 0);
