@@ -72,7 +72,7 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
       </Link>
       <div className={cn("mt-3 grid gap-3", q.options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
         {q.options.map(({ key: c, pct, url: rawUrl, label }) => {
-          const url = q.kind === "buyskip" ? q.options[0].url : rawUrl;
+          const url = q.kind === "buyskip" ? (q.options[0]?.url ?? "") : rawUrl;
           const chosen = q.decided_choice === c;
           return (
             <div key={c} className={cn("overflow-hidden rounded-xl bg-card brut-sm", chosen && "ring-4 ring-primary ring-offset-2")}>

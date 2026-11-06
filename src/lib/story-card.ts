@@ -117,7 +117,7 @@ export async function renderStoryCard(q: Question): Promise<Blob> {
     brutBox(ctx, -w / 2, -ch / 2, w, ch, "#fff", 32, 14);
     if (img) drawCover(ctx, img, -w / 2 + 3, -ch / 2 + 3, w - 6, ch - 6, 30);
     ctx.restore();
-    if (q.kind !== "buyskip") sticker(ctx, photoOpts[i].label, x + 56, y + 40, FILLS[photoOpts[i].key], -0.1, 60);
+    if (q.kind !== "buyskip") sticker(ctx, photoOpts[i]?.label ?? "", x + 56, y + 40, FILLS[photoOpts[i]?.key ?? "a"] ?? YELLOW, -0.1, 60);
   });
   if (n === 2) sticker(ctx, "VS", W / 2, area.y + area.h / 2, PINK, 0.08, 64);
   if (q.kind === "buyskip") sticker(ctx, "BUY OR SKIP?", W / 2, area.y + area.h - 10, PINK, -0.05, 60);
@@ -133,7 +133,7 @@ export async function renderStoryCard(q: Question): Promise<Blob> {
     ctx.save();
     roundRect(ctx, 93, y + 3, 894, bh - 6, 20);
     ctx.clip();
-    ctx.fillStyle = q.kind === "buyskip" ? (o.key === "a" ? LIME : PINK) : FILLS[o.key] === "#fff" ? "#d9d2b4" : FILLS[o.key];
+    ctx.fillStyle = q.kind === "buyskip" ? (o.key === "a" ? LIME : PINK) : FILLS[o.key] === "#fff" ? "#d9d2b4" : (FILLS[o.key] ?? YELLOW);
     ctx.fillRect(93, y + 3, (894 * o.pct) / 100, bh - 6);
     ctx.restore();
     ctx.fillStyle = INK;
@@ -198,7 +198,7 @@ export async function renderPreviewCard(blobs: Blob[]): Promise<Blob> {
     brutBox(ctx, -pw / 2, -ph / 2, pw, ph, "#fff", 28, 12);
     if (img) drawCover(ctx, img, -pw / 2 + 3, -ph / 2 + 3, pw - 6, ph - 6, 26);
     ctx.restore();
-    if (n > 1) sticker(ctx, "ABCD"[i], x + 46, top + 40, fills[i], -0.1, n > 2 ? 46 : 56);
+    if (n > 1) sticker(ctx, "ABCD"[i] ?? "", x + 46, top + 40, fills[i] ?? PINK, -0.1, n > 2 ? 46 : 56);
   });
   if (n === 2) sticker(ctx, "VS", W / 2, top + ph / 2, PINK, 0.08, 56);
   if (n === 1) sticker(ctx, "BUY OR SKIP?", W / 2, top + ph - 20, PINK, -0.05, 48);

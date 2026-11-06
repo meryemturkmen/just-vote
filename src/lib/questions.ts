@@ -83,7 +83,7 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
     const present = imgs.filter(([, p]) => !!p);
     const counts = present.map(([k]) => r.votes.filter((v) => v.choice === k).length);
     const pcts = percentAll(counts);
-    const options: QOption[] = present.map(([k, p], i) => ({ key: k, url: urls[p as string] ?? "", votes: counts[i], pct: pcts[i], label: optionLabel(kind, k) }));
+    const options: QOption[] = present.map(([k, p], i) => ({ key: k, url: urls[p as string] ?? "", votes: counts[i] ?? 0, pct: pcts[i] ?? 0, label: optionLabel(kind, k) }));
     return {
     kind,
     options,
@@ -227,7 +227,7 @@ export function percentAll(counts: number[]): number[] {
   const out = raw.map(Math.floor);
   let left = 100 - out.reduce((s, n) => s + n, 0);
   const order = raw.map((v, i) => [v - Math.floor(v), i] as const).sort((x, y) => y[0] - x[0]);
-  for (const [, i] of order) { if (left <= 0) break; out[i]++; left--; }
+  for (const [, i] of order) { if (left <= 0) break; out[i] = (out[i] ?? 0) + 1; left--; }
   return out;
 }
 
@@ -250,7 +250,7 @@ export function totals(q: Pick<Question, "options" | "myVote">) {
 export function withVote<T extends Pick<Question, "options" | "myVote">>(q: T, c: Choice): T {
   const counts = q.options.map((o) => o.votes + (o.key === c ? 1 : 0));
   const pcts = percentAll(counts);
-  return { ...q, myVote: c, options: q.options.map((o, i) => ({ ...o, votes: counts[i], pct: pcts[i] })) };
+  return { ...q, myVote: c, options: q.options.map((o, i) => ({ ...o, votes: counts[i] ?? 0, pct: pcts[i] ?? 0 })) };
 }
 
 export function isClosed(q: { ends_at: string | null }, now = Date.now()) {

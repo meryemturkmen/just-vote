@@ -107,9 +107,9 @@ function NewQuestion() {
           duration_hours: duration,
           kind,
           option_a_label: kind === "buyskip" ? "Buy it" : "Option A",
-          option_a_image: paths[0],
+          option_a_image: paths[0]!,
           option_b_label: kind === "buyskip" ? "Skip it" : "Option B",
-          option_b_image: kind === "buyskip" ? paths[0] : paths[1],
+          option_b_image: (kind === "buyskip" ? paths[0] : paths[1])!,
           option_c_image: kind === "multi" ? paths[2] : null,
           option_d_image: kind === "multi" ? (paths[3] ?? null) : null,
         })
@@ -180,12 +180,12 @@ function NewQuestion() {
 
         {kind === "buyskip" ? (
           <div className="mx-auto w-2/3">
-            <PhotoPicker name="?" photo={photos[0]} set={setPhoto(0)} />
+            <PhotoPicker name="?" photo={photos[0] ?? null} set={setPhoto(0)} />
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
             {Array.from({ length: slots }, (_, i) => (
-              <PhotoPicker key={i} name={"ABCD"[i]} photo={photos[i]} set={setPhoto(i)} optional={kind === "multi" && i === 3} />
+              <PhotoPicker key={i} name={"ABCD"[i] ?? ""} photo={photos[i] ?? null} set={setPhoto(i)} optional={kind === "multi" && i === 3} />
             ))}
           </div>
         )}
