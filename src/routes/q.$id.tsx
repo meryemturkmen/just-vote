@@ -103,11 +103,10 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: "a" | "b") =>
             onClick={() => onVote(c)}
             aria-label={`Vote for option ${c.toUpperCase()}`}
             className={cn(
-              "relative block w-full overflow-hidden rounded-2xl bg-muted brut-lg press disabled:cursor-default",
+              "relative block w-full overflow-hidden rounded-2xl border-2 bg-muted shadow-brut-lg press disabled:cursor-default",
               c === "a" ? "rotate-[-0.8deg]" : "rotate-[0.8deg]",
               mine && "ring-4 ring-primary ring-offset-2 ring-offset-background",
             )}
-            style={{ boxShadow: "var(--shadow-brut-lg)" }}
           >
             {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="aspect-[4/5] w-full object-cover" />}
             <span className={cn("absolute left-3 top-3 grid size-12 place-items-center rounded-xl font-display text-2xl font-extrabold brut-sm", c === "a" ? "bg-yellow tilt-l" : "bg-lime tilt-r")}>
