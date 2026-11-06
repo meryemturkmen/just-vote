@@ -14,7 +14,7 @@ export function InterestPicker({ value, onChange }: { value: string[]; onChange:
       </div>
       <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
         <span>{value.length} selected · at least one</span>
-        <button type="button" className="font-semibold text-primary" onClick={() => onChange(all ? [value[0]] : [...CATEGORIES])}>
+        <button type="button" className="font-semibold text-primary" onClick={() => onChange(all ? [CATEGORIES[0]] : [...CATEGORIES])}>
           {all ? "Clear" : "Select all"}
         </button>
       </div>
