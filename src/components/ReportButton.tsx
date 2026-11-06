@@ -7,7 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { REPORT_REASONS, reportQuestion } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 
-export function ReportButton({ questionId, compact }: { questionId: string; compact?: boolean }) {
+export function ReportButton({ questionId, compact, onReport, label = "Report question" }: {
+  questionId: string; compact?: boolean; label?: string; onReport?: (reason: string, details: string) => Promise<void>;
+}) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<string>("");
   const [details, setDetails] = useState("");
@@ -16,7 +18,7 @@ export function ReportButton({ questionId, compact }: { questionId: string; comp
   async function submit() {
     setBusy(true);
     try {
-      await reportQuestion(questionId, reason, details);
+      await (onReport ? onReport(reason, details) : reportQuestion(questionId, reason, details));
       toast.success("Thanks! We'll check it out 🕵️");
       setOpen(false);
     } catch (e) {
@@ -31,7 +33,7 @@ export function ReportButton({ questionId, compact }: { questionId: string; comp
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Report question"
+        aria-label={label}
         className={cn("inline-flex items-center gap-1 text-xs font-medium text-muted-foreground", !compact && "rounded-full px-2 py-1")}
       >
         <Flag className="size-3.5" /> {!compact && "Report"}
