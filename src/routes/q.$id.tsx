@@ -1,26 +1,29 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Check, Share2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
-import { CategoryTag, Chip } from "@/components/CategoryChips";
+import { CategoryTag, Chip, Sticker } from "@/components/CategoryChips";
+import { AnimatedBar } from "@/components/AnimatedBar";
+import { ShareButtons } from "@/components/ShareButtons";
+import { ReportButton } from "@/components/ReportButton";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  COMMENT_MAX, FEEDBACK_TAGS, castVote, displayTitle, fetchFeedback, fetchQuestion,
-  isClosed, myVoterId, decisionLabel, percent, sendFeedback, shareQuestion, timeLeft, type Question,
+  COMMENT_MAX, FEEDBACK_TAGS, castVote, decisionLabel, displayTitle, fetchFeedback, fetchQuestion,
+  isClosed, myVoterId, percent, sendFeedback, timeLeft, type Question,
 } from "@/lib/questions";
+import { myShare, verdictLine } from "@/lib/copy";
 import { cn } from "@/lib/utils";
-import { ReportButton } from "@/components/ReportButton";
 
 export const Route = createFileRoute("/q/$id")({
   head: () => ({
     meta: [
-      { title: "Which would you buy? — Just Vote" },
-      { name: "description", content: "Tap the one you'd rather buy and help decide on Just Vote." },
-      { property: "og:title", content: "Which would you buy? — Just Vote" },
-      { property: "og:description", content: "Tap the one you'd rather buy and help decide on Just Vote." },
+      { title: "Which one?? — Just Vote" },
+      { name: "description", content: "Pick one. No pressure. Your vote decides." },
+      { property: "og:title", content: "Which one?? — Just Vote" },
+      { property: "og:description", content: "Pick one. No pressure. Your vote decides." },
       { property: "og:type", content: "article" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -40,20 +43,20 @@ function Detail() {
 
   return (
     <AppShell>
-      <Link to="/" className="mb-4 inline-flex items-center gap-1 text-sm font-medium text-muted-foreground">
-        <ArrowLeft className="size-4" /> Feed
+      <Link to="/" className="mb-5 inline-flex items-center gap-1 rounded-lg bg-card px-3 py-1.5 text-sm font-bold brut-sm press">
+        <ArrowLeft className="size-4" strokeWidth={3} /> Feed
       </Link>
-      {isLoading && <div className="h-[70vh] animate-pulse rounded-3xl bg-muted" />}
-      {!isLoading && !q && <p className="text-muted-foreground">This question doesn't exist anymore.</p>}
+      {isLoading && <p className="animate-wiggle inline-block rounded-lg bg-yellow px-4 py-2 font-display text-xl font-extrabold brut">Loading…</p>}
+      {!isLoading && !q && (
+        <p className="tilt-l inline-block rounded-lg bg-lime px-4 py-3 font-display text-2xl font-extrabold brut">This one's gone. Poof 💨</p>
+      )}
       {q && (
         <>
           <Context q={q} />
           <Photos q={q} onVote={(c) => vote.mutate(c)} pending={vote.isPending} />
           {(q.myVote || isClosed(q)) && <Results q={q} />}
           {q.myVote && <FeedbackForm questionId={q.id} />}
-          <Button variant="soft" className="mt-6 h-12 w-full" onClick={() => shareQuestion(q.id, displayTitle(q))}>
-            <Share2 /> Share link
-          </Button>
+          <div className="mt-6"><ShareButtons q={q} /></div>
           <FeedbackList questionId={q.id} />
         </>
       )}
@@ -64,31 +67,20 @@ function Detail() {
 function Context({ q }: { q: Question }) {
   return (
     <section className="mb-5">
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex flex-wrap items-center gap-2">
         <CategoryTag category={q.category} />
-        <span className="ml-auto text-xs font-medium text-muted-foreground">{timeLeft(q.ends_at)}</span>
+        <Sticker className="bg-card">⏰ {timeLeft(q.ends_at)}</Sticker>
+        <span className="ml-auto"><ReportButton questionId={q.id} /></span>
       </div>
-      <h1 className="mt-3 text-2xl font-bold leading-tight">{displayTitle(q)}</h1>
+      <h1 className="mt-4 text-[34px] leading-[1]">{displayTitle(q)}</h1>
       {(q.occasion || q.budget) && (
-        <dl className="mt-3 flex flex-wrap gap-2 text-sm">
-          {q.occasion && <Info label="Occasion" value={q.occasion} />}
-          {q.budget && <Info label="Budget" value={q.budget} />}
-        </dl>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {q.occasion && <Sticker>🎉 For: {q.occasion}</Sticker>}
+          {q.budget && <Sticker className="tilt-l">💸 Budget: {q.budget}</Sticker>}
+        </div>
       )}
-      <div className="mt-2 flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">asked by {q.author}</p>
-        <ReportButton questionId={q.id} />
-      </div>
+      <p className="mt-3 text-sm font-medium">asked by <span className="font-extrabold">{q.author}</span></p>
     </section>
-  );
-}
-
-function Info({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-2xl bg-muted px-3 py-1.5">
-      <dt className="sr-only">{label}</dt>
-      <dd><span className="text-muted-foreground">{label}: </span><span className="font-medium">{value}</span></dd>
-    </div>
   );
 }
 
@@ -98,11 +90,11 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: "a" | "b") =>
   const [pa, pb] = percent(q.votesA, q.votesB);
   const show = !!q.myVote || closed;
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {(["a", "b"] as const).map((c) => {
         const url = c === "a" ? q.option_a_url : q.option_b_url;
         const mine = q.myVote === c;
-        const pct = c === "a" ? pa : pb;
+        const won = q.decided_choice === c;
         return (
           <button
             key={c}
@@ -111,28 +103,24 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: "a" | "b") =>
             onClick={() => onVote(c)}
             aria-label={`Vote for option ${c.toUpperCase()}`}
             className={cn(
-              "relative block w-full overflow-hidden rounded-3xl bg-muted ring-4 ring-transparent transition active:scale-[0.99] disabled:cursor-default",
-              mine && "ring-primary",
+              "relative block w-full overflow-hidden rounded-2xl border-2 bg-muted shadow-brut-lg press disabled:cursor-default",
+              c === "a" ? "rotate-[-0.8deg]" : "rotate-[0.8deg]",
+              mine && "ring-4 ring-primary ring-offset-2 ring-offset-background",
             )}
           >
             {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="aspect-[4/5] w-full object-cover" />}
-            <span className="absolute left-3 top-3 grid size-10 place-items-center rounded-full bg-card font-display text-lg font-bold shadow-card">
+            <span className={cn("absolute left-3 top-3 grid size-12 place-items-center rounded-xl font-display text-2xl font-extrabold brut-sm", c === "a" ? "bg-yellow tilt-l" : "bg-lime tilt-r")}>
               {c.toUpperCase()}
             </span>
-            {mine && (
-              <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
-                <Check className="size-3.5" /> Your vote
-              </span>
-            )}
+            {mine && <span className="animate-pop absolute right-3 top-3 rounded-md bg-primary px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">My pick</span>}
+            {won && <span className="animate-pop absolute bottom-16 right-3 rounded-md bg-lime px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">They bought it 🛍️</span>}
             {show && (
-              <span className="absolute bottom-3 right-3 rounded-full bg-card px-3 py-1.5 font-display text-lg font-bold shadow-card">
-                {pct}%
+              <span className="absolute bottom-3 right-3 rounded-lg bg-card px-3 py-1 font-display text-2xl font-extrabold brut-sm">
+                {c === "a" ? pa : pb}%
               </span>
             )}
             {!locked && (
-              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/60 to-transparent p-4 text-left text-sm font-semibold text-primary-foreground">
-                Tap to vote
-              </span>
+              <span className="absolute bottom-3 left-3 rounded-lg bg-card px-3 py-1.5 text-sm font-extrabold brut-sm">Tap to pick 👆</span>
             )}
           </button>
         );
@@ -146,34 +134,20 @@ function Results({ q }: { q: Question }) {
   const total = q.votesA + q.votesB;
   const closed = isClosed(q);
   const decided = decisionLabel(q.decided_choice);
-  const lead = total === 0 ? "No votes yet" : pa === pb ? "It's a tie!" : closed ? (pa > pb ? "A won" : "B won") : pa > pb ? "A is winning" : "B is winning";
+  const line = q.myVote ? verdictLine(myShare(q.myVote, pa, pb), total) : "Voting's over. Here's the tea ☕";
   return (
-    <section className="mt-6 rounded-3xl bg-primary-soft p-5">
-      {closed && <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-accent-foreground">Final results</p>}
-      {decided && <p className="mb-3 inline-flex rounded-full bg-primary px-3 py-1 text-xs font-semibold text-primary-foreground">The asker {decided.toLowerCase()} 🎉</p>}
-      <div className="flex items-baseline justify-between">
-        <p className="font-display text-lg font-semibold">{lead}</p>
-        <p className="text-sm font-medium text-muted-foreground">{total} {total === 1 ? "vote" : "votes"}</p>
+    <section className="mt-8 rounded-2xl bg-card p-5 brut">
+      <div className="flex items-center justify-between">
+        <p className="font-display text-sm font-extrabold uppercase">{closed ? "Final results 🏁" : "Live results"}</p>
+        <p className="text-sm font-bold">{total} {total === 1 ? "vote" : "votes"}</p>
       </div>
+      <p className="animate-pop mt-3 inline-block rounded-lg bg-yellow px-3 py-2 font-display text-xl font-extrabold leading-tight brut-sm">{line}</p>
+      {decided && <p className="mt-3 inline-block rounded-md bg-primary px-3 py-1 text-xs font-extrabold uppercase brut-sm">The asker {decided.toLowerCase()} 🎉</p>}
       <div className="mt-4 space-y-3">
-        <Bar label="A" pct={pa} n={q.votesA} mine={q.myVote === "a"} />
-        <Bar label="B" pct={pb} n={q.votesB} mine={q.myVote === "b"} />
+        <AnimatedBar label="A" pct={pa} highlight={q.myVote === "a"} color="bg-yellow" />
+        <AnimatedBar label="B" pct={pb} highlight={q.myVote === "b"} color="bg-lime" />
       </div>
     </section>
-  );
-}
-
-function Bar({ label, pct, n, mine }: { label: string; pct: number; n: number; mine: boolean }) {
-  return (
-    <div>
-      <div className="flex justify-between text-sm font-medium">
-        <span>Option {label}{mine && " · you"}</span>
-        <span>{pct}% <span className="text-muted-foreground">({n})</span></span>
-      </div>
-      <div className="mt-1.5 h-3 overflow-hidden rounded-full bg-card">
-        <div className="h-full rounded-full bg-primary transition-all duration-700" style={{ width: `${pct}%` }} />
-      </div>
-    </div>
   );
 }
 
@@ -186,30 +160,30 @@ function FeedbackForm({ questionId }: { questionId: string }) {
   const { data: list } = useQuery({ queryKey: ["feedback", questionId], queryFn: () => fetchFeedback(questionId) });
   const send = useMutation({
     mutationFn: () => sendFeedback(questionId, tags, comment),
-    onSuccess: () => { toast.success("Thanks for the tip! 💛"); qc.invalidateQueries({ queryKey: ["feedback", questionId] }); },
+    onSuccess: () => { toast.success("Noted. You're a real one 💅"); qc.invalidateQueries({ queryKey: ["feedback", questionId] }); },
     onError: (e: Error) => toast.error(e.message),
   });
   if (!voterId || list?.some((f) => f.voter_id === voterId)) return null;
 
   return (
-    <section className="mt-5 rounded-3xl border bg-card p-5 shadow-card">
-      <p className="font-display font-semibold">Why this one? <span className="text-sm font-normal text-muted-foreground">· optional</span></p>
+    <section className="mt-6 rounded-2xl bg-lime p-5 brut">
+      <p className="font-display text-xl font-extrabold">Why tho? <span className="text-sm font-bold">(optional)</span></p>
       <div className="mt-3 flex flex-wrap gap-2">
         {FEEDBACK_TAGS.map((t) => (
           <Chip key={t} active={tags.includes(t)} onClick={() => setTags(tags.includes(t) ? tags.filter((x) => x !== t) : [...tags, t])}>{t}</Chip>
         ))}
       </div>
       <Textarea
-        className="mt-3 min-h-20 rounded-2xl"
-        placeholder="A quick thought for the asker…"
+        className="mt-3 min-h-20 rounded-xl bg-card"
+        placeholder="Spill it. 140 chars max."
         maxLength={COMMENT_MAX}
         value={comment}
         onChange={(e) => setComment(e.target.value)}
       />
-      <div className="mt-2 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">{comment.length}/{COMMENT_MAX}</span>
-        <Button variant="hero" className="h-10 px-5" disabled={send.isPending || (!tags.length && !comment.trim())} onClick={() => send.mutate()}>
-          Send
+      <div className="mt-3 flex items-center justify-between">
+        <span className="text-xs font-bold">{comment.length}/{COMMENT_MAX}</span>
+        <Button variant="hero" className="px-6" disabled={send.isPending || (!tags.length && !comment.trim())} onClick={() => send.mutate()}>
+          Send it
         </Button>
       </div>
     </section>
@@ -219,21 +193,27 @@ function FeedbackForm({ questionId }: { questionId: string }) {
 function FeedbackList({ questionId }: { questionId: string }) {
   const { data } = useQuery({ queryKey: ["feedback", questionId], queryFn: () => fetchFeedback(questionId) });
   if (!data?.length) return null;
-  const counts = FEEDBACK_TAGS.map((t) => [t, data.filter((f) => f.tags.includes(t)).length] as const).filter(([, n]) => n > 0);
+  const counts = FEEDBACK_TAGS.map((t) => [t, data.filter((f) => f.tags.includes(t)).length] as const)
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1]);
   const comments = data.filter((f) => f.comment);
   return (
-    <section className="mt-8">
-      <h2 className="text-lg font-semibold">What voters said</h2>
+    <section className="mt-10">
+      <h2 className="text-2xl">The comments section 🍿</h2>
       {counts.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {counts.map(([t, n]) => (
-            <span key={t} className="rounded-full bg-muted px-3 py-1.5 text-sm font-medium">{t} <span className="text-primary">{n}</span></span>
+          {counts.map(([t, n], i) => (
+            <span key={t} className={cn("rounded-md bg-card px-3 py-1.5 text-sm font-extrabold brut-sm", i % 2 ? "tilt-r" : "tilt-l")}>
+              {t} <span className="rounded bg-primary px-1.5">{n}</span>
+            </span>
           ))}
         </div>
       )}
-      <ul className="mt-4 space-y-2">
-        {comments.map((f) => (
-          <li key={f.id} className="rounded-2xl bg-muted px-4 py-3 text-sm">“{f.comment}”</li>
+      <ul className="mt-5 space-y-3">
+        {comments.map((f, i) => (
+          <li key={f.id} className={cn("rounded-xl bg-card px-4 py-3 text-sm font-medium brut-sm", i % 2 ? "rotate-[0.6deg]" : "rotate-[-0.6deg]")}>
+            “{f.comment}”
+          </li>
         ))}
       </ul>
     </section>

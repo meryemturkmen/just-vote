@@ -17,7 +17,7 @@ export function ReportButton({ questionId, compact }: { questionId: string; comp
     setBusy(true);
     try {
       await reportQuestion(questionId, reason, details);
-      toast.success("Thanks — we'll take a look.");
+      toast.success("Thanks! We'll check it out 🕵️");
       setOpen(false);
     } catch (e) {
       toast.error((e as Error).message);
@@ -39,8 +39,8 @@ export function ReportButton({ questionId, compact }: { questionId: string; comp
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="font-display text-xl">Report this question</DrawerTitle>
-            <DrawerDescription>What's wrong with it?</DrawerDescription>
+            <DrawerTitle className="font-display text-xl">Something off? 🚩</DrawerTitle>
+            <DrawerDescription>Tell us what's sus.</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-2 px-4 pb-6">
             {REPORT_REASONS.map((r) => (
@@ -48,13 +48,13 @@ export function ReportButton({ questionId, compact }: { questionId: string; comp
                 key={r.value}
                 type="button"
                 onClick={() => setReason(r.value)}
-                className={cn("w-full rounded-2xl border px-4 py-3 text-left text-sm font-medium", reason === r.value && "border-primary bg-primary-soft")}
+                className={cn("w-full rounded-xl bg-card px-4 py-3 text-left text-sm font-bold brut-sm press", reason === r.value && "bg-yellow")}
               >
                 {r.label}
               </button>
             ))}
             <Textarea className="rounded-2xl" placeholder="Anything else? (optional)" maxLength={300} value={details} onChange={(e) => setDetails(e.target.value)} />
-            <Button variant="hero" className="h-12 w-full" disabled={!reason || busy} onClick={submit}>Send report</Button>
+            <Button variant="hero" className="h-12 w-full" disabled={!reason || busy} onClick={submit}>Report it</Button>
           </div>
         </DrawerContent>
       </Drawer>

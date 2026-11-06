@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/Logo";
 import { InterestPicker } from "@/components/InterestPicker";
 import { CATEGORIES } from "@/lib/categories";
 import { fetchInterests, saveInterests } from "@/lib/profile";
@@ -44,14 +45,14 @@ function Onboarding() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-8 pt-10">
-      <span className="grid size-10 place-items-center rounded-xl bg-primary font-display font-bold text-primary-foreground">JV</span>
-      <h1 className="mt-6 text-3xl font-bold">What do you like shopping for?</h1>
-      <p className="mt-2 text-sm text-muted-foreground">We'll show you questions from these categories. You can change this anytime in your profile.</p>
+      <Logo />
+      <h1 className="mt-8 text-5xl leading-[0.95]">What do you buy way too much of?</h1>
+      <p className="mt-2 text-sm text-muted-foreground">Pick your categories. Change it anytime, no drama.</p>
       <div className="mt-8 flex-1">
         <InterestPicker value={interests} onChange={setInterests} />
       </div>
       <Button variant="hero" className="mt-8 h-12 w-full" disabled={busy} onClick={done}>
-        Let's go
+        Let's gooo
       </Button>
     </div>
   );

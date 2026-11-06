@@ -1,40 +1,36 @@
 import { Link } from "@tanstack/react-router";
-import { Bell, Home, Plus, LayoutList, User } from "lucide-react";
+import { Bell, Flame, Plus, LayoutGrid, Smile } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import type { ReactNode } from "react";
 import { useUser } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
-import type { ReactNode } from "react";
+import { Logo } from "@/components/Logo";
 
-export function AppShell({ children, title }: { children: ReactNode; title?: string }) {
+export function AppShell({ children, title, bleed }: { children: ReactNode; title?: string; bleed?: boolean }) {
   return (
-    <div className="mx-auto min-h-screen max-w-md bg-background pb-28">
-      <header className="sticky top-0 z-20 bg-background/85 px-5 pb-3 pt-5 backdrop-blur">
+    <div className={bleed ? "mx-auto h-[100dvh] max-w-md overflow-hidden bg-background" : "mx-auto min-h-[100dvh] max-w-md bg-background pb-32"}>
+      <header className="sticky top-0 z-20 border-b-2 bg-background px-5 py-3">
         <div className="flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="grid size-8 place-items-center rounded-xl bg-primary font-display text-sm font-bold text-primary-foreground">
-            JV
-          </span>
-          <span className="font-display text-xl font-bold tracking-tight">Just Vote</span>
-        </Link>
-        <NotificationBell />
+          <Link to="/" aria-label="Just Vote home"><Logo /></Link>
+          <NotificationBell />
         </div>
-        {title && <h1 className="mt-5 text-2xl font-bold">{title}</h1>}
       </header>
-      <main className="px-5">{children}</main>
+      {title && <h1 className="px-5 pt-6 text-4xl leading-[0.95]">{title}</h1>}
+      <main className={bleed ? "" : "px-5 pt-5"}>{children}</main>
       <BottomNav />
     </div>
   );
 }
 
-function Tab({ to, label, icon: Icon }: { to: "/" | "/my" | "/profile"; label: string; icon: typeof Home }) {
+function Tab({ to, label, icon: Icon }: { to: "/" | "/my" | "/profile"; label: string; icon: typeof Flame }) {
   return (
     <Link
       to={to}
-      className="flex flex-1 flex-col items-center gap-1 py-2 text-xs font-medium text-muted-foreground"
-      activeProps={{ className: "text-primary" }}
+      className="flex flex-1 flex-col items-center gap-0.5 rounded-xl py-2 text-[11px] font-extrabold uppercase"
+      activeProps={{ className: "bg-yellow" }}
       activeOptions={{ exact: true }}
     >
-      <Icon className="size-5" />
+      <Icon className="size-6" strokeWidth={2.75} />
       {label}
     </Link>
   );
@@ -42,18 +38,18 @@ function Tab({ to, label, icon: Icon }: { to: "/" | "/my" | "/profile"; label: s
 
 function BottomNav() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-4 pb-4">
-      <div className="flex items-center rounded-3xl border bg-card px-2 shadow-card">
-        <Tab to="/" label="Feed" icon={Home} />
+    <nav className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md px-3 pb-3">
+      <div className="flex items-center gap-1 rounded-2xl bg-card p-1.5 brut">
+        <Tab to="/" label="Feed" icon={Flame} />
         <Link
           to="/new"
           aria-label="New question"
-          className="-mt-7 mx-2 grid size-14 place-items-center rounded-full bg-primary text-primary-foreground shadow-float transition-transform active:scale-95"
+          className="mx-1 -mt-8 grid size-16 rotate-[-6deg] place-items-center rounded-2xl bg-primary brut press"
         >
-          <Plus className="size-7" />
+          <Plus className="size-9" strokeWidth={3.5} />
         </Link>
-        <Tab to="/my" label="My Questions" icon={LayoutList} />
-        <Tab to="/profile" label="Profile" icon={User} />
+        <Tab to="/my" label="Mine" icon={LayoutGrid} />
+        <Tab to="/profile" label="Me" icon={Smile} />
       </div>
     </nav>
   );
@@ -73,10 +69,10 @@ function NotificationBell() {
   });
   if (!user) return null;
   return (
-    <Link to="/notifications" aria-label={unread ? `${unread} new notifications` : "Notifications"} className="relative grid size-10 place-items-center rounded-full bg-card shadow-card">
-      <Bell className="size-5" />
+    <Link to="/notifications" aria-label={unread ? `${unread} new notifications` : "Notifications"} className="relative grid size-11 place-items-center rounded-xl bg-card brut-sm press">
+      <Bell className="size-5" strokeWidth={2.75} />
       {unread > 0 && (
-        <span className="absolute -right-0.5 -top-0.5 grid min-w-5 place-items-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+        <span className="animate-wiggle absolute -right-2 -top-2 grid min-w-6 place-items-center rounded-full bg-primary px-1 text-[11px] font-extrabold brut-sm">
           {unread > 9 ? "9+" : unread}
         </span>
       )}

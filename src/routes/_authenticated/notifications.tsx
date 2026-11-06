@@ -30,26 +30,26 @@ function Notifications() {
   }, [isSuccess, data, qc]);
 
   return (
-    <AppShell title="Notifications">
-      {isLoading && <div className="h-20 animate-pulse rounded-3xl bg-muted" />}
+    <AppShell title="What's new 🔔">
+      {isLoading && <div className="h-20 animate-pulse rounded-2xl bg-muted" />}
       {data?.length === 0 && (
-        <div className="rounded-3xl bg-primary-soft p-8 text-center">
-          <p className="font-display text-lg font-semibold">All quiet 🌿</p>
-          <p className="mt-1 text-sm text-muted-foreground">We'll let you know when people vote on your questions.</p>
+        <div className="rounded-2xl bg-yellow p-8 text-center brut tilt-l">
+          <p className="font-display text-lg font-semibold">Crickets 🦗</p>
+          <p className="mt-1 text-sm text-muted-foreground">We'll ping you when people vote on your stuff.</p>
         </div>
       )}
       <ul className="space-y-2">
         {data?.map((n) => (
           <li key={n.id}>
-            <Link to="/q/$id" params={{ id: n.question_id }} className={cn("flex items-center gap-3 rounded-3xl border bg-card p-4 shadow-card", !n.read && "border-primary/40 bg-primary-soft")}>
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground">
+            <Link to="/q/$id" params={{ id: n.question_id }} className={cn("flex items-center gap-3 rounded-2xl bg-card p-4 brut", !n.read && "bg-yellow")}>
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary brut-sm">
                 {n.kind === "ended" ? <Flag className="size-5" /> : <Vote className="size-5" />}
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{n.title}</p>
                 <p className="text-xs text-muted-foreground">{notificationText(n)}</p>
               </div>
-              {!n.read && <span className="ml-auto size-2 shrink-0 rounded-full bg-primary" />}
+              {!n.read && <span className="ml-auto shrink-0 rounded-md bg-primary px-1.5 text-[10px] font-extrabold uppercase brut-sm">new</span>}
             </Link>
           </li>
         ))}
