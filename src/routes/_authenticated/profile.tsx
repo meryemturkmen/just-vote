@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -72,6 +72,10 @@ function Profile() {
   }
 
   const [deleting, setDeleting] = useState(false);
+  const isAdmin = useQuery({
+    queryKey: ["is-admin", user.id],
+    queryFn: async () => (await supabase.rpc("has_role", { _user_id: user.id, _role: "admin" })).data === true,
+  });
   async function nuke() {
     if (!window.confirm("Delete your account and ALL your data? Questions, photos, votes, points — gone forever. No undo.")) return;
     setDeleting(true);
@@ -124,6 +128,9 @@ function Profile() {
       <div className="mt-8 rounded-2xl bg-card p-4 brut">
         <p className="font-display font-semibold">Legal stuff</p>
         <LegalLinks className="mt-3 justify-start text-sm" />
+        {isAdmin.data && (
+          <Button asChild variant="hero" className="mt-4 h-11 w-full"><Link to="/admin">Reports admin 🚨</Link></Button>
+        )}
       </div>
       <div className="mt-6 rounded-2xl border-2 bg-destructive/10 p-4">
         <p className="font-display font-semibold">Danger zone ☠️</p>
