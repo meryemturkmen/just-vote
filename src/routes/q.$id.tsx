@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { QuestionSkeleton } from "@/components/Skeleton";
 import { AppShell } from "@/components/AppShell";
 import { CategoryTag, Chip, Sticker } from "@/components/CategoryChips";
 import { AnimatedBar } from "@/components/AnimatedBar";
@@ -62,9 +63,12 @@ function Detail() {
       <Link to="/" className="mb-5 inline-flex items-center gap-1 rounded-lg bg-card px-3 py-1.5 text-sm font-bold brut-sm press">
         <ArrowLeft className="size-4" strokeWidth={3} /> Feed
       </Link>
-      {isLoading && <p className="animate-wiggle inline-block rounded-lg bg-yellow px-4 py-2 font-display text-xl font-extrabold brut">Loading…</p>}
+      {isLoading && <QuestionSkeleton />}
       {!isLoading && !q && (
         <p className="tilt-l inline-block rounded-lg bg-lime px-4 py-3 font-display text-2xl font-extrabold brut">This one's gone. Poof 💨</p>
+      )}
+      {!isLoading && !q && (
+        <p className="mt-4 font-medium">Expired, deleted or the link's busted. <Link to="/" className="font-extrabold underline">Judge something else →</Link></p>
       )}
       {q && (
         <>

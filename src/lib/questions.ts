@@ -124,7 +124,9 @@ export async function castVote(questionId: string, choice: "a" | "b") {
     .insert({ question_id: questionId, user_id: uid, choice, anonymous: !session });
   if (error) {
     if (error.code === "23505") throw new Error("You already voted on this one");
-    throw error;
+    if (typeof navigator !== "undefined" && !navigator.onLine) throw new Error("You're offline. Vote didn't send 📵");
+    if (/closed|ended|expired/i.test(error.message)) throw new Error("Too late! Voting on this one already ended ⏰");
+    throw new Error("Vote didn't go through. Try again?");
   }
   if (typeof window !== "undefined") window.dispatchEvent(new Event("jv:voted"));
 }

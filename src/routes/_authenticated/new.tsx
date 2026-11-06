@@ -92,7 +92,10 @@ function NewQuestion() {
       qc.invalidateQueries({ queryKey: ["questions"] });
       setCreated({ id: data.id, title: title.trim() || "Which one should I buy?" });
     } catch (err) {
-      toast.error((err as Error).message);
+      const offline = typeof navigator !== "undefined" && !navigator.onLine;
+      toast.error(offline ? "You're offline. Pics didn't upload 📵" : "Upload flopped 😵 Check your pics and try again.", {
+        description: offline ? "Reconnect and hit post again." : (err as Error).message,
+      });
     } finally {
       setBusy(false);
     }

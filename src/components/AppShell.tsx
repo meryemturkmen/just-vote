@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Bell, Flame, Plus, LayoutGrid, Smile } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -7,16 +7,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 
 export function AppShell({ children, title, bleed }: { children: ReactNode; title?: string; bleed?: boolean }) {
+  const path = useLocation({ select: (l) => l.pathname });
   return (
     <div className={bleed ? "mx-auto h-[100dvh] max-w-md overflow-hidden bg-background" : "mx-auto min-h-[100dvh] max-w-md bg-background pb-32"}>
-      <header className="sticky top-0 z-20 border-b-2 bg-background px-5 py-3">
+      <header className="sticky top-0 z-20 border-b-2 bg-background px-4 py-3 min-[400px]:px-5">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="Just Vote home"><Logo /></Link>
           <NotificationBell />
         </div>
       </header>
-      {title && <h1 className="px-5 pt-6 text-4xl leading-[0.95]">{title}</h1>}
-      <main className={bleed ? "" : "px-5 pt-5"}>{children}</main>
+      <div key={path} className="animate-page">
+        {title && <h1 className="px-4 pt-6 text-[2rem] leading-[0.95] min-[400px]:px-5 min-[400px]:text-4xl">{title}</h1>}
+        <main className={bleed ? "" : "px-4 pt-5 min-[400px]:px-5"}>{children}</main>
+      </div>
       <BottomNav />
     </div>
   );
