@@ -47,12 +47,13 @@ function Feed() {
   const dividerIndex = myInterests && !category ? items.findIndex((i) => !i.matched) : -1;
 
   const sentinel = useRef<HTMLDivElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = sentinel.current;
     if (!el) return;
     const io = new IntersectionObserver((e) => {
       if (e[0]?.isIntersecting && feed.hasNextPage && !feed.isFetchingNextPage) feed.fetchNextPage();
-    }, { rootMargin: "1200px" });
+    }, { root: scroller.current, rootMargin: "0px 0px 1500px 0px" });
     io.observe(el);
     return () => io.disconnect();
   }, [feed.hasNextPage, feed.isFetchingNextPage, feed.fetchNextPage]);
@@ -70,7 +71,7 @@ function Feed() {
           </div>
         </div>
 
-        <div className="no-scrollbar relative min-h-0 flex-1 snap-y snap-mandatory overflow-y-scroll pb-[96px]">
+        <div className="no-scrollbar relative min-h-0 flex-1 snap-y snap-mandatory overflow-y-scroll mb-[92px]" ref={scroller}>
           {(feed.isLoading || !ready) && (
             <div className="flex h-full items-center justify-center">
               <p className="animate-wiggle rounded-lg bg-yellow px-4 py-2 font-display text-xl font-extrabold brut">Loading the drama…</p>
