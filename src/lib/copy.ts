@@ -8,6 +8,6 @@ export function verdictLine(myPct: number, total: number): string {
   return `Bold. Only ${myPct}% picked this one 👀`;
 }
 
-export function myShare(choice: "a" | "b", pa: number, pb: number) {
+export function myShare(choice: string, pa: number, pb: number) {
   return choice === "a" ? pa : pb;
 }

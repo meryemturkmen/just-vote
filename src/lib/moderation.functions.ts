@@ -51,10 +51,10 @@ function toBytes(b64: string) {
   return out;
 }
 
-/** Checks the daily question limit, runs AI image moderation, then stores both photos. */
+/** Checks the daily question limit, runs AI image moderation, then stores the 1-4 photos. */
 export const uploadQuestionPhotos = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d) => z.object({ a: img, b: img }).parse(d))
+  .inputValidator((d) => z.object({ images: z.array(img).min(1).max(4) }).parse(d))
   .handler(async ({ data, context }) => {
     const uid = context.userId;
     const since = new Date(Date.now() - 86400000).toISOString();
@@ -65,7 +65,7 @@ export const uploadQuestionPhotos = createServerFn({ method: "POST" })
 
     let verdict;
     try {
-      verdict = await moderate([data.a, data.b]);
+      verdict = await moderate(data.images);
     } catch (e) {
       console.error("moderation failed", e);
       return { ok: false as const, error: "moderation_unavailable" as const };
@@ -74,13 +74,13 @@ export const uploadQuestionPhotos = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const paths: string[] = [];
-    for (const b64 of [data.a, data.b]) {
+    for (const b64 of data.images) {
       const path = `${uid}/${crypto.randomUUID()}.jpg`;
       const { error } = await supabaseAdmin.storage.from(BUCKET).upload(path, toBytes(b64), { contentType: "image/jpeg" });
       if (error) throw new Error(error.message);
       paths.push(path);
     }
-    return { ok: true as const, a: paths[0], b: paths[1] };
+    return { ok: true as const, paths };
   });
 
 /** Stores the link-preview image for a question the caller owns. */
@@ -105,9 +105,9 @@ export const adminDeleteQuestion = createServerFn({ method: "POST" })
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: q } = await supabaseAdmin.from("questions").select("id, user_id, option_a_image, option_b_image").eq("id", data.id).maybeSingle();
+    const { data: q } = await supabaseAdmin.from("questions").select("id, user_id, option_a_image, option_b_image, option_c_image, option_d_image").eq("id", data.id).maybeSingle();
     if (!q) return { ok: true };
-    await supabaseAdmin.storage.from(BUCKET).remove([q.option_a_image, q.option_b_image, `${q.user_id}/${q.id}-og.jpg`]);
+    await supabaseAdmin.storage.from(BUCKET).remove([q.option_a_image, q.option_b_image, q.option_c_image, q.option_d_image, `${q.user_id}/${q.id}-og.jpg`].filter((x): x is string => !!x));
     const { error } = await supabaseAdmin.from("questions").delete().eq("id", q.id);
     if (error) throw new Error(error.message);
     return { ok: true };

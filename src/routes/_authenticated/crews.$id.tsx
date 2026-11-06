@@ -7,7 +7,7 @@ import { AvatarSticker } from "@/components/Avatar";
 import { Button } from "@/components/ui/button";
 import { ListSkeleton } from "@/components/Skeleton";
 import { supabase } from "@/integrations/supabase/client";
-import { displayTitle, fetchCrewQuestions, isClosed, percent, timeLeft } from "@/lib/questions";
+import { displayTitle, fetchCrewQuestions, isClosed, timeLeft } from "@/lib/questions";
 import { inviteUrl } from "@/lib/social";
 
 export const Route = createFileRoute("/_authenticated/crews/$id")({
@@ -97,17 +97,18 @@ function CrewPage() {
       <h2 className="mt-8 text-xl">Crew dilemmas</h2>
       <div className="mt-3 space-y-2">
         {qs.isLoading ? <ListSkeleton /> : qs.data?.length ? qs.data.map((q) => {
-          const [pa, pb] = percent(q.votesA, q.votesB);
+
           return (
             <Link key={q.id} to="/q/$id" params={{ id: q.id }} className="flex items-center gap-3 rounded-xl bg-card p-2 brut-sm press">
               <div className="flex shrink-0 gap-1">
-                <img src={q.option_a_url} alt="Option A" className="size-12 rounded-lg border-2 object-cover" />
-                <img src={q.option_b_url} alt="Option B" className="size-12 rounded-lg border-2 object-cover" />
+                {q.options.slice(0, q.kind === "buyskip" ? 1 : 4).map((o) => (
+                  <img key={o.key} src={o.url} alt={`Option ${o.label}`} className="size-12 rounded-lg border-2 object-cover" />
+                ))}
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{displayTitle(q)}</p>
                 <p className="text-xs text-muted-foreground">
-                  {q.myVote ? `A ${pa}% · B ${pb}%` : "You haven't voted 👀"} · {isClosed(q) ? "closed" : timeLeft(q.ends_at)}
+                  {q.myVote ? q.options.map((o) => `${o.label} ${o.pct}%`).join(" · ") : "You haven't voted 👀"} · {isClosed(q) ? "closed" : timeLeft(q.ends_at)}
                 </p>
               </div>
             </Link>

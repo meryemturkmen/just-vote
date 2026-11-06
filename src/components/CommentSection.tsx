@@ -13,7 +13,7 @@ import {
   COMMENT_LIMIT, REACTIONS, fetchComments, postComment, reportComment, setCommentHidden, sortComments, toggleReaction,
   type Comment, type CommentSort,
 } from "@/lib/comments";
-import { FEEDBACK_TAGS, type Question } from "@/lib/questions";
+import { FEEDBACK_TAGS, OPTION_COLORS, type Question } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 
 /** Full comments section; only rendered once the viewer has voted. */
@@ -111,8 +111,8 @@ function CommentItem({ c, q, tilt, isOwner, signedIn, isReply }: {
       <div className={cn("rounded-xl bg-card px-4 py-3 brut-sm", tilt > 0 ? "rotate-[0.4deg]" : "rotate-[-0.4deg]", c.hidden && "opacity-50")}>
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-extrabold">{c.author}</span>
-          <span className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase brut-sm", c.choice === "a" ? "bg-yellow tilt-l" : "bg-lime tilt-r")}>
-            Team {c.choice.toUpperCase()}
+          <span className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase brut-sm", OPTION_COLORS[c.choice], c.choice === "a" || c.choice === "c" ? "tilt-l" : "tilt-r")}>
+            {q.kind === "buyskip" ? (c.choice === "a" ? "Team Buy" : "Team Skip") : `Team ${c.choice.toUpperCase()}`}
           </span>
           {c.hidden && <span className="text-[10px] font-extrabold uppercase">hidden</span>}
           <span className="ml-auto flex items-center gap-2">

@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Chip } from "@/components/CategoryChips";
 import { supabase } from "@/integrations/supabase/client";
-import { shareQuestion } from "@/lib/questions";
+import { QUESTION_KINDS, shareQuestion, type QuestionKind } from "@/lib/questions";
 import { useServerFn } from "@tanstack/react-start";
 import { uploadQuestionPhotos, uploadPreviewImage } from "@/lib/moderation.functions";
 import { hasProfanity, PROFANITY_MSG, friendlyDbError } from "@/lib/profanity";
@@ -23,9 +23,9 @@ export const Route = createFileRoute("/_authenticated/new")({
   head: () => ({
     meta: [
       { title: "New question — Just Vote" },
-      { name: "description", content: "Upload two products and let people vote." },
+      { name: "description", content: "Upload two, three or four products — or one to buy or skip — and let people vote." },
       { property: "og:title", content: "New question — Just Vote" },
-      { property: "og:description", content: "Upload two products and let people vote." },
+      { property: "og:description", content: "Upload two, three or four products — or one to buy or skip — and let people vote." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -45,8 +45,11 @@ type Photo = { blob: Blob; preview: string } | null;
 function NewQuestion() {
   const { user } = Route.useRouteContext();
   const qc = useQueryClient();
-  const [a, setA] = useState<Photo>(null);
-  const [b, setB] = useState<Photo>(null);
+  const [kind, setKind] = useState<QuestionKind>("ab");
+  const [photos, setPhotos] = useState<Photo[]>([null, null, null, null]);
+  const spec = QUESTION_KINDS.find((k) => k.value === kind)!;
+  const slots = kind === "multi" ? Math.min(4, Math.max(3, photos.slice(0, 4).filter(Boolean).length + 1)) : spec.max;
+  const setPhoto = (i: number) => (p: Photo) => setPhotos((cur) => cur.map((x, j) => (j === i ? p : x)));
   const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const [occasion, setOccasion] = useState("");
@@ -71,12 +74,16 @@ function NewQuestion() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!a || !b) { toast.error("Need both pics, bestie"); return; }
+    const picked = photos.slice(0, spec.max).filter((p): p is NonNullable<Photo> => !!p);
+    if (picked.length < spec.min) {
+      toast.error(kind === "buyskip" ? "Drop a pic first, bestie" : kind === "ab" ? "Need both pics, bestie" : "Need at least 3 pics, bestie");
+      return;
+    }
     if (!isCategory(category)) { toast.error("Pick a category first"); return; }
     if ([title, occasion, budget].some(hasProfanity)) { toast.error(PROFANITY_MSG); return; }
     setBusy(true);
     try {
-      const up = await uploadPhotos({ data: { a: await toB64(a.blob), b: await toB64(b.blob) } });
+      const up = await uploadPhotos({ data: { images: await Promise.all(picked.map((p) => toB64(p.blob))) } });
       if (!up.ok) {
         toast.error(
           up.error === "limit" ? "That's 10 questions today. Chill till tomorrow 😮‍💨"
@@ -85,8 +92,8 @@ function NewQuestion() {
         );
         return;
       }
-      if (!up.a || !up.b) throw new Error("Upload failed");
-      const pa = up.a, pb = up.b;
+      const paths = up.paths;
+      if (paths.length !== picked.length) throw new Error("Upload failed");
       const { data, error } = await supabase
         .from("questions")
         .insert({
@@ -98,22 +105,25 @@ function NewQuestion() {
           visibility,
           crew_id: crewId,
           duration_hours: duration,
-          option_a_label: "Option A",
-          option_a_image: pa,
-          option_b_label: "Option B",
-          option_b_image: pb,
+          kind,
+          option_a_label: kind === "buyskip" ? "Buy it" : "Option A",
+          option_a_image: paths[0]!,
+          option_b_label: kind === "buyskip" ? "Skip it" : "Option B",
+          option_b_image: (kind === "buyskip" ? paths[0] : paths[1])!,
+          option_c_image: kind === "multi" ? (paths[2] ?? null) : null,
+          option_d_image: kind === "multi" ? (paths[3] ?? null) : null,
         })
         .select("id")
         .single();
       if (error) throw new Error(friendlyDbError(error.message));
       try {
         const { renderPreviewCard } = await import("@/lib/story-card");
-        const og = await renderPreviewCard(a.blob, b.blob);
+        const og = await renderPreviewCard(picked.map((p) => p.blob));
         await uploadPreview({ data: { questionId: data.id, og: await toB64(og) } });
       } catch (e) {
         console.warn("Link preview image failed", e);
       }
-      window.__lovableEvents?.track?.("project.question_created", { category, visibility, duration_hours: duration });
+      window.__lovableEvents?.track?.("project.question_created", { category, visibility, duration_hours: duration, kind });
       qc.invalidateQueries({ queryKey: ["questions"] });
       setCreated({ id: data.id, title: title.trim() || "Which one should I buy?" });
     } catch (err) {
@@ -151,10 +161,34 @@ function NewQuestion() {
   return (
     <AppShell title="Help. I can't pick.">
       <form onSubmit={submit} className="space-y-7">
-        <div className="grid grid-cols-2 gap-3">
-          <PhotoPicker name="A" photo={a} set={setA} />
-          <PhotoPicker name="B" photo={b} set={setB} />
-        </div>
+        <Section label="Type">
+          <div className="grid grid-cols-3 gap-2">
+            {QUESTION_KINDS.map((k, i) => (
+              <button
+                key={k.value}
+                type="button"
+                onClick={() => setKind(k.value)}
+                aria-pressed={kind === k.value}
+                className={cn("rounded-xl px-2 py-2.5 text-left brut-sm press", kind === k.value ? "bg-yellow" : "bg-card", i === 1 ? "tilt-r" : "tilt-l")}
+              >
+                <span className="block font-display text-sm font-extrabold leading-tight">{k.label}</span>
+                <span className="mt-0.5 block text-[11px] leading-tight text-muted-foreground">{k.hint}</span>
+              </button>
+            ))}
+          </div>
+        </Section>
+
+        {kind === "buyskip" ? (
+          <div className="mx-auto w-2/3">
+            <PhotoPicker name="?" photo={photos[0] ?? null} set={setPhoto(0)} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {Array.from({ length: slots }, (_, i) => (
+              <PhotoPicker key={i} name={"ABCD"[i] ?? ""} photo={photos[i] ?? null} set={setPhoto(i)} optional={kind === "multi" && i === 3} />
+            ))}
+          </div>
+        )}
 
         <p className="-mt-3 rounded-2xl bg-muted px-4 py-3 text-xs text-muted-foreground">
           🙏 Please don't upload photos showing other people's faces without permission.
@@ -237,7 +271,7 @@ function Section({ label, hint, required, children }: { label: string; hint?: st
   );
 }
 
-function PhotoPicker({ name, photo, set }: { name: string; photo: Photo; set: (p: Photo) => void }) {
+function PhotoPicker({ name, photo, set, optional }: { name: string; photo: Photo; set: (p: Photo) => void; optional?: boolean }) {
   const [working, setWorking] = useState(false);
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -266,6 +300,7 @@ function PhotoPicker({ name, photo, set }: { name: string; photo: Photo; set: (p
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-3 p-3">
             <span className="font-display text-5xl font-extrabold">{name}</span>
+            {optional && <span className="-mt-2 text-[11px] font-bold text-muted-foreground">optional</span>}
             {working ? (
               <p className="text-xs text-muted-foreground">Shrinking…</p>
             ) : (

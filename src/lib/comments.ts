@@ -12,7 +12,7 @@ export type Comment = {
   parent_id: string | null;
   author_id: string;
   anonymous: boolean;
-  choice: "a" | "b";
+  choice: "a" | "b" | "c" | "d";
   body: string;
   tags: string[];
   hidden: boolean;

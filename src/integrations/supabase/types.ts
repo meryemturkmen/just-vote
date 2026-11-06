@@ -359,11 +359,14 @@ export type Database = {
           ends_at: string | null
           hidden: boolean
           id: string
+          kind: string
           occasion: string | null
           option_a_image: string
           option_a_label: string
           option_b_image: string
           option_b_label: string
+          option_c_image: string | null
+          option_d_image: string | null
           title: string
           user_id: string
           visibility: string
@@ -380,11 +383,14 @@ export type Database = {
           ends_at?: string | null
           hidden?: boolean
           id?: string
+          kind?: string
           occasion?: string | null
           option_a_image: string
           option_a_label?: string
           option_b_image: string
           option_b_label?: string
+          option_c_image?: string | null
+          option_d_image?: string | null
           title?: string
           user_id: string
           visibility?: string
@@ -401,11 +407,14 @@ export type Database = {
           ends_at?: string | null
           hidden?: boolean
           id?: string
+          kind?: string
           occasion?: string | null
           option_a_image?: string
           option_a_label?: string
           option_b_image?: string
           option_b_label?: string
+          option_c_image?: string | null
+          option_d_image?: string | null
           title?: string
           user_id?: string
           visibility?: string
@@ -682,6 +691,10 @@ export type Database = {
           votes: number
           week_points: number
         }[]
+      }
+      question_has_choice: {
+        Args: { p_choice: string; p_question: string }
+        Returns: boolean
       }
       reset_crew_invite: { Args: { p_crew: string }; Returns: string }
       set_comment_hidden: {

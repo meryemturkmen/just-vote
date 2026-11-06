@@ -9,7 +9,7 @@ import { ListSkeleton } from "@/components/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import {
-  BOOST_COST, boostQuestion, isBoosted, decideQuestion, decisionLabel, displayTitle, fetchMine, isClosed, percent, timeLeft, type Question,
+  BOOST_COST, boostQuestion, isBoosted, decideQuestion, decisionLabel, displayTitle, fetchMine, isClosed, OPTION_COLORS, timeLeft, totals, type Choice, type Question,
 } from "@/lib/questions";
 import { cn } from "@/lib/utils";
 
@@ -57,10 +57,9 @@ function Mine() {
 }
 
 function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
-  const [pa, pb] = percent(q.votesA, q.votesB);
-  const total = q.votesA + q.votesB;
+  const { total } = totals(q);
   const closed = isClosed(q);
-  const decided = decisionLabel(q.decided_choice);
+  const decided = decisionLabel(q.decided_choice, q.kind);
   return (
     <article className="rounded-2xl bg-card p-4 brut">
       <div className="flex items-center gap-2">
@@ -71,16 +70,15 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
       <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-xl font-extrabold leading-tight">
         {displayTitle(q)}
       </Link>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        {(["a", "b"] as const).map((c) => {
-          const pct = c === "a" ? pa : pb;
-          const url = c === "a" ? q.option_a_url : q.option_b_url;
+      <div className={cn("mt-3 grid gap-3", q.options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
+        {q.options.map(({ key: c, pct, url: rawUrl, label }) => {
+          const url = q.kind === "buyskip" ? (q.options[0]?.url ?? "") : rawUrl;
           const chosen = q.decided_choice === c;
           return (
             <div key={c} className={cn("overflow-hidden rounded-xl bg-card brut-sm", chosen && "ring-4 ring-primary ring-offset-2")}>
               <div className="relative aspect-square">
                 {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="size-full object-cover" />}
-                <span className="absolute left-2 top-2 grid size-7 place-items-center rounded-md bg-yellow text-xs font-extrabold brut-sm">{c.toUpperCase()}</span>
+                <span className={cn("absolute left-2 top-2 grid h-7 min-w-7 place-items-center rounded-md px-1.5 text-xs font-extrabold brut-sm", OPTION_COLORS[c])}>{label}</span>
                 {chosen && <CheckCircle2 className="absolute right-2 top-2 size-7 rounded-full bg-lime text-foreground" />}
               </div>
               <div className="p-2.5">
@@ -112,7 +110,7 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
 function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }) {
   const qc = useQueryClient();
   const decide = useMutation({
-    mutationFn: (c: "a" | "b" | "neither") => decideQuestion(q!.id, c),
+    mutationFn: (c: Choice | "neither") => decideQuestion(q!.id, c),
     onSuccess: () => {
       toast.success("Congrats on the new buy 🛍️");
       qc.invalidateQueries({ queryKey: ["questions"] });
@@ -129,8 +127,14 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
         </DrawerHeader>
         {q && (
           <div className="px-4 pb-6">
+            {q.kind === "buyskip" ? (
+              <div className="grid grid-cols-2 gap-3">
+                <Button variant="hero" className="h-14" disabled={decide.isPending} onClick={() => decide.mutate("a")}>🛒 I bought it</Button>
+                <Button variant="soft" className="h-14" disabled={decide.isPending} onClick={() => decide.mutate("b")}>🙅 I skipped it</Button>
+              </div>
+            ) : (
             <div className="grid grid-cols-2 gap-3">
-              {(["a", "b"] as const).map((c) => (
+              {q.options.map(({ key: c, url }) => (
                 <button
                   key={c}
                   type="button"
@@ -138,11 +142,12 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
                   onClick={() => decide.mutate(c)}
                   className="relative overflow-hidden rounded-xl bg-muted brut press"
                 >
-                  <img src={c === "a" ? q.option_a_url : q.option_b_url} alt={`Option ${c.toUpperCase()}`} className="aspect-square w-full object-cover" />
-                  <span className="absolute left-2 top-2 grid size-8 place-items-center rounded-md bg-yellow font-extrabold brut-sm">{c.toUpperCase()}</span>
+                  <img src={url} alt={`Option ${c.toUpperCase()}`} className="aspect-square w-full object-cover" />
+                  <span className={cn("absolute left-2 top-2 grid size-8 place-items-center rounded-md font-extrabold brut-sm", OPTION_COLORS[c])}>{c.toUpperCase()}</span>
                 </button>
               ))}
             </div>
+            )}
             <Button variant="ghost" className="mt-3 h-11 w-full" disabled={decide.isPending} onClick={() => decide.mutate("neither")}>
               Neither. Back to scrolling 🫠
             </Button>

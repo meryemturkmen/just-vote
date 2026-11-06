@@ -11,9 +11,9 @@ import { ShareButtons } from "@/components/ShareButtons";
 import { ReportButton } from "@/components/ReportButton";
 import { CommentSection } from "@/components/CommentSection";
 import {
-  castVote, decisionLabel, displayTitle, fetchQuestion, isClosed, percent, timeLeft, type Question,
+  castVote, decisionLabel, displayTitle, fetchQuestion, isClosed, OPTION_COLORS, timeLeft, totals, type Choice, type Question,
 } from "@/lib/questions";
-import { myShare, verdictLine } from "@/lib/copy";
+import { verdictLine } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 import { logShareEvent } from "@/lib/share-events";
 
@@ -60,7 +60,7 @@ function Detail() {
   }, [id]);
   const { data: q, isLoading } = useQuery({ queryKey: ["questions", "one", id], queryFn: () => fetchQuestion(id) });
   const vote = useMutation({
-    mutationFn: (c: "a" | "b") => castVote(id, c),
+    mutationFn: (c: Choice) => castVote(id, c),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["questions"] }),
     onError: (e: Error) => toast.error(e.message),
   });
@@ -114,15 +114,32 @@ function Context({ q }: { q: Question }) {
   );
 }
 
-function Photos({ q, onVote, pending }: { q: Question; onVote: (c: "a" | "b") => void; pending: boolean }) {
+function Photos({ q, onVote, pending }: { q: Question; onVote: (c: Choice) => void; pending: boolean }) {
   const closed = isClosed(q);
   const locked = !!q.myVote || closed || pending;
-  const [pa, pb] = percent(q.votesA, q.votesB);
   const show = !!q.myVote || closed;
+  if (q.kind === "buyskip") {
+    const o = q.options[0];
+    return (
+      <div className="space-y-5">
+        <div className="relative overflow-hidden rounded-2xl border-2 bg-muted shadow-brut-lg rotate-[-0.8deg]">
+          {o?.url && <img src={o.url} alt="The item" className="aspect-[4/5] w-full object-cover" />}
+          {q.decided_choice === "a" && <span className="animate-pop absolute bottom-3 right-3 rounded-md bg-lime px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">They bought it 🛍️</span>}
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {q.options.map((x) => (
+            <button key={x.key} type="button" disabled={locked} onClick={() => onVote(x.key)}
+              className={cn("h-16 rounded-xl font-display text-xl font-extrabold brut press disabled:cursor-default", x.key === "a" ? "bg-lime tilt-l" : "bg-pink tilt-r", q.myVote === x.key && "ring-4 ring-ink ring-offset-2 ring-offset-background", show && q.myVote !== x.key && "opacity-60")}>
+              {x.key === "a" ? "🛒 Buy it" : "🙅 Skip it"}{show && ` · ${x.pct}%`}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="space-y-5">
-      {(["a", "b"] as const).map((c) => {
-        const url = c === "a" ? q.option_a_url : q.option_b_url;
+      {q.options.map(({ key: c, url, pct }, i) => {
         const mine = q.myVote === c;
         const won = q.decided_choice === c;
         return (
@@ -134,19 +151,19 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: "a" | "b") =>
             aria-label={`Vote for option ${c.toUpperCase()}`}
             className={cn(
               "relative block w-full overflow-hidden rounded-2xl border-2 bg-muted shadow-brut-lg press disabled:cursor-default",
-              c === "a" ? "rotate-[-0.8deg]" : "rotate-[0.8deg]",
+              i % 2 === 0 ? "rotate-[-0.8deg]" : "rotate-[0.8deg]",
               mine && "ring-4 ring-primary ring-offset-2 ring-offset-background",
             )}
           >
             {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="aspect-[4/5] w-full object-cover" />}
-            <span className={cn("absolute left-3 top-3 grid size-12 place-items-center rounded-xl font-display text-2xl font-extrabold brut-sm", c === "a" ? "bg-yellow tilt-l" : "bg-lime tilt-r")}>
+            <span className={cn("absolute left-3 top-3 grid size-12 place-items-center rounded-xl font-display text-2xl font-extrabold brut-sm", OPTION_COLORS[c], i % 2 === 0 ? "tilt-l" : "tilt-r")}>
               {c.toUpperCase()}
             </span>
             {mine && <span className="animate-pop absolute right-3 top-3 rounded-md bg-primary px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">My pick</span>}
             {won && <span className="animate-pop absolute bottom-16 right-3 rounded-md bg-lime px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">They bought it 🛍️</span>}
             {show && (
               <span className="absolute bottom-3 right-3 rounded-lg bg-card px-3 py-1 font-display text-2xl font-extrabold brut-sm">
-                {c === "a" ? pa : pb}%
+                {pct}%
               </span>
             )}
             {!locked && (
@@ -160,11 +177,10 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: "a" | "b") =>
 }
 
 function Results({ q }: { q: Question }) {
-  const [pa, pb] = percent(q.votesA, q.votesB);
-  const total = q.votesA + q.votesB;
+  const { total, mine } = totals(q);
   const closed = isClosed(q);
-  const decided = decisionLabel(q.decided_choice);
-  const line = q.myVote ? verdictLine(myShare(q.myVote, pa, pb), total) : "Voting's over. Here's the tea ☕";
+  const decided = decisionLabel(q.decided_choice, q.kind);
+  const line = q.myVote ? verdictLine(mine, total) : "Voting's over. Here's the tea ☕";
   return (
     <section className="mt-8 rounded-2xl bg-card p-5 brut">
       <div className="flex items-center justify-between">
@@ -174,8 +190,9 @@ function Results({ q }: { q: Question }) {
       <p className="animate-pop mt-3 inline-block rounded-lg bg-yellow px-3 py-2 font-display text-xl font-extrabold leading-tight brut-sm">{line}</p>
       {decided && <p className="mt-3 inline-block rounded-md bg-primary px-3 py-1 text-xs font-extrabold uppercase brut-sm">The asker {decided.toLowerCase()} 🎉</p>}
       <div className="mt-4 space-y-3">
-        <AnimatedBar label="A" pct={pa} highlight={q.myVote === "a"} color="bg-yellow" />
-        <AnimatedBar label="B" pct={pb} highlight={q.myVote === "b"} color="bg-lime" />
+        {q.options.map((o) => (
+          <AnimatedBar key={o.key} label={o.label} pct={o.pct} highlight={q.myVote === o.key} color={OPTION_COLORS[o.key]} />
+        ))}
       </div>
     </section>
   );
