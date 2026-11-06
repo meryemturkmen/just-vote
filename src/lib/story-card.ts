@@ -159,3 +159,35 @@ export async function shareStoryCard(q: Question) {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
   return "downloaded";
 }
+
+/** Render a 1200x630 link-preview JPEG (both photos side by side + wordmark) from local photo blobs. */
+export async function renderPreviewCard(a: Blob, b: Blob): Promise<Blob> {
+  await document.fonts?.ready;
+  const W = 1200, H = 630;
+  const c = document.createElement("canvas");
+  c.width = W; c.height = H;
+  const ctx = c.getContext("2d")!;
+  ctx.fillStyle = YELLOW;
+  ctx.fillRect(0, 0, W, H);
+  const ua = URL.createObjectURL(a), ub = URL.createObjectURL(b);
+  const [imgA, imgB] = await Promise.all([loadImage(ua), loadImage(ub)]);
+  URL.revokeObjectURL(ua); URL.revokeObjectURL(ub);
+  const pw = 500, ph = 470, py = 40;
+  const slots = [
+    { img: imgA, x: 60, rot: -0.035, label: "A", fill: PINK },
+    { img: imgB, x: 640, rot: 0.035, label: "B", fill: LIME },
+  ];
+  for (const s of slots) {
+    ctx.save();
+    ctx.translate(s.x + pw / 2, py + ph / 2);
+    ctx.rotate(s.rot);
+    brutBox(ctx, -pw / 2, -ph / 2, pw, ph, "#fff", 28, 12);
+    if (s.img) drawCover(ctx, s.img, -pw / 2 + 3, -ph / 2 + 3, pw - 6, ph - 6, 26);
+    ctx.restore();
+    sticker(ctx, s.label, s.x + 50, py + 40, s.fill, -0.1, 56);
+  }
+  sticker(ctx, "VS", W / 2, py + ph / 2, PINK, 0.08, 56);
+  sticker(ctx, "JUST", 520, 570, INK, -0.06, 52);
+  sticker(ctx, "VOTE!", 690, 578, PINK, 0.05, 52);
+  return new Promise((res, rej) => c.toBlob((bl) => (bl ? res(bl) : rej(new Error("preview failed"))), "image/jpeg", 0.85));
+}
