@@ -1,3 +1,4 @@
+import { hasProfanity, PROFANITY_MSG, friendlyDbError } from "@/lib/profanity";
 import { supabase } from "@/integrations/supabase/client";
 
 export const BUCKET = "question-images";
@@ -154,6 +155,7 @@ export async function myVoterId() {
 export async function sendFeedback(questionId: string, tags: string[], comment: string) {
   const trimmed = comment.trim();
   if (trimmed.length > COMMENT_MAX) throw new Error(`Max ${COMMENT_MAX} characters`);
+  if (hasProfanity(trimmed)) throw new Error(PROFANITY_MSG);
   const { id, anonymous } = await myVoterId();
   if (!id) throw new Error("Not available right now");
   const { error } = await supabase
@@ -161,7 +163,7 @@ export async function sendFeedback(questionId: string, tags: string[], comment: 
     .insert({ question_id: questionId, voter_id: id, anonymous, tags, comment: trimmed || null });
   if (error) {
     if (error.code === "23505") throw new Error("You already left feedback");
-    throw error;
+    throw new Error(friendlyDbError(error.message));
   }
 }
 
