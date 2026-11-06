@@ -6,6 +6,7 @@ export type Question = {
   id: string;
   user_id: string;
   title: string;
+  category: string;
   option_a_label: string;
   option_b_label: string;
   option_a_url: string;
@@ -21,6 +22,7 @@ type Row = {
   id: string;
   user_id: string;
   title: string;
+  category: string;
   option_a_label: string;
   option_a_image: string;
   option_b_label: string;
@@ -34,7 +36,7 @@ const SELECT = "*, profiles(display_name), votes(choice, user_id)";
 
 async function hydrate(rows: Row[]): Promise<Question[]> {
   const { data: { session } } = await supabase.auth.getSession();
-  const uid = session?.user.id;
+  const uid = session?.user.id ?? guestId();
   const paths = rows.flatMap((r) => [r.option_a_image, r.option_b_image]);
   const urls: Record<string, string> = {};
   if (paths.length) {
@@ -47,6 +49,7 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
     id: r.id,
     user_id: r.user_id,
     title: r.title,
+    category: r.category,
     option_a_label: r.option_a_label,
     option_b_label: r.option_b_label,
     option_a_url: urls[r.option_a_image] ?? "",
@@ -59,12 +62,20 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
   }));
 }
 
-export async function fetchFeed() {
-  const { data, error } = await supabase
-    .from("questions")
-    .select(SELECT)
-    .order("created_at", { ascending: false })
-    .limit(50);
+export function guestId() {
+  if (typeof window === "undefined") return undefined;
+  let id = localStorage.getItem("jv_guest_id");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("jv_guest_id", id);
+  }
+  return id;
+}
+
+export async function fetchFeed(categories?: string[]) {
+  let q = supabase.from("questions").select(SELECT).order("created_at", { ascending: false }).limit(50);
+  if (categories && categories.length) q = q.in("category", categories);
+  const { data, error } = await q;
   if (error) throw error;
   return hydrate(data as unknown as Row[]);
 }
@@ -87,11 +98,12 @@ export async function fetchQuestion(id: string) {
 }
 
 export async function castVote(questionId: string, choice: "a" | "b") {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Please sign in to vote");
+  const { data: { session } } = await supabase.auth.getSession();
+  const uid = session?.user.id ?? guestId();
+  if (!uid) throw new Error("Voting isn't available right now");
   const { error } = await supabase
     .from("votes")
-    .upsert({ question_id: questionId, user_id: user.id, choice }, { onConflict: "question_id,user_id" });
+    .upsert({ question_id: questionId, user_id: uid, choice, anonymous: !session }, { onConflict: "question_id,user_id" });
   if (error) throw error;
 }
 

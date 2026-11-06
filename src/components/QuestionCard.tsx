@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { castVote, percent, type Question } from "@/lib/questions";
 import { cn } from "@/lib/utils";
+import { CategoryTag } from "@/components/CategoryChips";
 
 export function QuestionCard({ q, linked = true }: { q: Question; linked?: boolean }) {
   const qc = useQueryClient();
@@ -58,7 +59,8 @@ export function QuestionCard({ q, linked = true }: { q: Question; linked?: boole
 
   return (
     <article className="rounded-3xl border bg-card p-4 shadow-card">
-      <div className="mb-3 flex items-baseline justify-between gap-3">
+      <CategoryTag category={q.category} />
+      <div className="mb-3 mt-2 flex items-baseline justify-between gap-3">
         {linked ? (
           <Link to="/q/$id" params={{ id: q.id }} className="font-display text-lg font-semibold leading-snug">
             {q.title}
