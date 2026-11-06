@@ -29,12 +29,16 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [age, setAge] = useState(false);
+  const [trap, setTrap] = useState("");
+  const [openedAt] = useState(() => Date.now());
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "up") {
+        // Basic bot protection: hidden honeypot field + humans need > 3s to fill the form
+        if (trap || Date.now() - openedAt < 3000) { toast.error("Slow down, speedrunner 🤖 Try again in a sec."); return; }
         if (!age) { toast.error("You need to be 16+ to join. Rules are rules 🙅"); return; }
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -83,6 +87,7 @@ function AuthPage() {
         <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
       </div>
       <form onSubmit={submit} className="space-y-3">
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" value={trap} onChange={(e) => setTrap(e.target.value)} className="absolute -left-[9999px] h-0 w-0 opacity-0" />
         {mode === "up" && (
           <Input className="h-12 rounded-xl bg-card" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required />
         )}
