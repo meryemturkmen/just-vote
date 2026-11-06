@@ -132,12 +132,12 @@ function ReportCard({ group, onChange }: { group: { id: string; reports: Report[
             onClick={() => run(async () => {
               const { error } = await supabase.from("questions").update({ hidden: !hidden }).eq("id", q.id);
               if (error) throw error;
-              if (!hidden) await markReports("hidden");
+              if (!hidden) await markReports("reviewed");
             }, hidden ? "Unhidden" : "Hidden 🙈")}>
             {hidden ? "Unhide" : "Hide"}
           </Button>
           <Button variant="destructive" className="h-11 border-2 px-2" disabled={busy}
-            onClick={() => { if (window.confirm("Delete this question and its photos for good?")) run(async () => { await markReports("deleted"); await del({ data: { id: q.id } }); }, "Deleted 🗑️"); }}>
+            onClick={() => { if (window.confirm("Delete this question and its photos for good?")) run(async () => { await markReports("removed"); await del({ data: { id: q.id } }); }, "Deleted 🗑️"); }}>
             Delete
           </Button>
           <Button variant="soft" className="h-11 px-2" disabled={busy} onClick={() => run(() => markReports("dismissed"), "Dismissed")}>
