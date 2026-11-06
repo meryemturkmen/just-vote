@@ -4,7 +4,18 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const BUCKET = "question-images";
 
+export type Choice = "a" | "b" | "c" | "d";
+export type QuestionKind = "ab" | "multi" | "buyskip";
+export const QUESTION_KINDS: { value: QuestionKind; label: string; hint: string; min: number; max: number }[] = [
+  { value: "ab", label: "A vs B", hint: "Two pics, one winner", min: 2, max: 2 },
+  { value: "multi", label: "A vs B vs C", hint: "Up to 4 pics", min: 3, max: 4 },
+  { value: "buyskip", label: "Buy it or skip it", hint: "One pic, yes or no", min: 1, max: 1 },
+];
+export type QOption = { key: Choice; url: string; votes: number; pct: number; label: string };
+
 export type Question = {
+  kind: QuestionKind;
+  options: QOption[];
   id: string;
   user_id: string;
   hidden: boolean;
@@ -18,7 +29,7 @@ export type Question = {
   author: string;
   votesA: number;
   votesB: number;
-  myVote: "a" | "b" | null;
+  myVote: Choice | null;
   commentCount: number;
   occasion: string | null;
   budget: string | null;
@@ -38,6 +49,9 @@ type Row = {
   option_a_image: string;
   option_b_label: string;
   option_b_image: string;
+  option_c_image?: string | null;
+  option_d_image?: string | null;
+  kind?: string;
   created_at: string;
   occasion: string | null;
   budget: string | null;
@@ -55,7 +69,7 @@ const SELECT = "*, profiles(display_name), votes(choice, user_id), comments(coun
 async function hydrate(rows: Row[]): Promise<Question[]> {
   const { data: { session } } = await supabase.auth.getSession();
   const uid = session?.user.id ?? guestId();
-  const paths = rows.flatMap((r) => [r.option_a_image, r.option_b_image]);
+  const paths = [...new Set(rows.flatMap((r) => [r.option_a_image, r.option_b_image, r.option_c_image, r.option_d_image].filter((x): x is string => !!x)))];
   const urls: Record<string, string> = {};
   if (paths.length) {
     const { data } = await supabase.storage.from(BUCKET).createSignedUrls(paths, 60 * 60);
@@ -63,7 +77,16 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
       if (d.path && d.signedUrl) urls[d.path] = d.signedUrl;
     });
   }
-  return rows.map((r) => ({
+  return rows.map((r) => {
+    const kind = (r.kind === "multi" || r.kind === "buyskip" ? r.kind : "ab") as QuestionKind;
+    const imgs: [Choice, string | null | undefined][] = [["a", r.option_a_image], ["b", r.option_b_image], ["c", r.option_c_image], ["d", r.option_d_image]];
+    const present = imgs.filter(([, p]) => !!p);
+    const counts = present.map(([k]) => r.votes.filter((v) => v.choice === k).length);
+    const pcts = percentAll(counts);
+    const options: QOption[] = present.map(([k, p], i) => ({ key: k, url: urls[p as string] ?? "", votes: counts[i], pct: pcts[i], label: optionLabel(kind, k) }));
+    return {
+    kind,
+    options,
     id: r.id,
     user_id: r.user_id,
     hidden: r.hidden ?? false,
@@ -84,8 +107,9 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
     votesA: r.votes.filter((v) => v.choice === "a").length,
     votesB: r.votes.filter((v) => v.choice === "b").length,
     commentCount: r.comments?.[0]?.count ?? 0,
-    myVote: (r.votes.find((v) => v.user_id === uid)?.choice as "a" | "b" | undefined) ?? null,
-  }));
+    myVote: (r.votes.find((v) => v.user_id === uid)?.choice as Choice | undefined) ?? null,
+  };
+  });
 }
 
 export function guestId() {
@@ -134,7 +158,7 @@ export async function fetchQuestion(id: string) {
   return (await hydrate([data as unknown as Row]))[0];
 }
 
-export async function castVote(questionId: string, choice: "a" | "b") {
+export async function castVote(questionId: string, choice: Choice) {
   const { data: { session } } = await supabase.auth.getSession();
   const uid = session?.user.id ?? guestId();
   if (!uid) throw new Error("Voting isn't available right now");
@@ -193,6 +217,40 @@ export function percent(a: number, b: number) {
   if (!total) return [0, 0] as const;
   const pa = Math.round((a / total) * 100);
   return [pa, 100 - pa] as const;
+}
+
+/** Percentages for any number of options, rounded so they add up to 100 (largest remainder). */
+export function percentAll(counts: number[]): number[] {
+  const total = counts.reduce((s, n) => s + n, 0);
+  if (!total) return counts.map(() => 0);
+  const raw = counts.map((n) => (n / total) * 100);
+  const out = raw.map(Math.floor);
+  let left = 100 - out.reduce((s, n) => s + n, 0);
+  const order = raw.map((v, i) => [v - Math.floor(v), i] as const).sort((x, y) => y[0] - x[0]);
+  for (const [, i] of order) { if (left <= 0) break; out[i]++; left--; }
+  return out;
+}
+
+/** Display name of an option: "Buy it"/"Skip it" for buy-or-skip, otherwise the letter. */
+export function optionLabel(kind: QuestionKind, key: Choice) {
+  if (kind === "buyskip") return key === "a" ? "Buy it" : "Skip it";
+  return key.toUpperCase();
+}
+
+export const OPTION_COLORS: Record<Choice, string> = { a: "bg-yellow", b: "bg-lime", c: "bg-pink", d: "bg-card" };
+
+/** Total votes and the voter's share for a question. */
+export function totals(q: Pick<Question, "options" | "myVote">) {
+  const total = q.options.reduce((s, o) => s + o.votes, 0);
+  const mine = q.options.find((o) => o.key === q.myVote)?.pct ?? 0;
+  return { total, mine };
+}
+
+/** Add one vote locally and recompute percentages. */
+export function withVote<T extends Pick<Question, "options" | "myVote">>(q: T, c: Choice): T {
+  const counts = q.options.map((o) => o.votes + (o.key === c ? 1 : 0));
+  const pcts = percentAll(counts);
+  return { ...q, myVote: c, options: q.options.map((o, i) => ({ ...o, votes: counts[i], pct: pcts[i] })) };
 }
 
 export function isClosed(q: { ends_at: string | null }, now = Date.now()) {
@@ -267,14 +325,15 @@ export async function fetchFeedPage(opts: {
   });
 }
 
-export async function decideQuestion(id: string, choice: "a" | "b" | "neither") {
+export async function decideQuestion(id: string, choice: Choice | "neither") {
   const { error } = await supabase.rpc("decide_question", { p_question: id, p_choice: choice });
   if (error) throw error;
 }
 
-export function decisionLabel(choice: string | null) {
-  if (choice === "a") return "Went with A";
-  if (choice === "b") return "Went with B";
+export function decisionLabel(choice: string | null, kind: QuestionKind = "ab") {
+  if (kind === "buyskip" && choice === "a") return "Bought it";
+  if (kind === "buyskip" && choice === "b") return "Skipped it";
+  if (choice && ["a", "b", "c", "d"].includes(choice)) return `Went with ${choice.toUpperCase()}`;
   if (choice === "neither") return "Chose neither";
   return null;
 }
