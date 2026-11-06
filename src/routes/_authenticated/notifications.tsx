@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { Flag, Vote } from "lucide-react";
+import { ListSkeleton } from "@/components/Skeleton";
 import { AppShell } from "@/components/AppShell";
 import { fetchNotifications, markAllRead, notificationText } from "@/lib/notifications";
 import { cn } from "@/lib/utils";
@@ -31,7 +32,7 @@ function Notifications() {
 
   return (
     <AppShell title="What's new 🔔">
-      {isLoading && <div className="h-20 animate-pulse rounded-2xl bg-muted" />}
+      {isLoading && <ListSkeleton rows={4} h="h-20" />}
       {data?.length === 0 && (
         <div className="rounded-2xl bg-yellow p-8 text-center brut tilt-l">
           <p className="font-display text-lg font-semibold">Crickets 🦗</p>

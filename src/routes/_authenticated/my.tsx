@@ -5,6 +5,7 @@ import { CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { CategoryTag } from "@/components/CategoryChips";
+import { ListSkeleton } from "@/components/Skeleton";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription } from "@/components/ui/drawer";
 import {
@@ -37,11 +38,11 @@ function Mine() {
 
   return (
     <AppShell title="My dilemmas">
-      {isLoading && <div className="h-40 animate-pulse rounded-2xl bg-muted" />}
+      {isLoading && <ListSkeleton rows={3} h="h-40" />}
       {data?.length === 0 && (
         <div className="rounded-2xl bg-yellow p-8 text-center brut tilt-l">
-          <p className="font-display text-lg font-semibold">Nothing here yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">Torn between two things? The internet is waiting.</p>
+          <p className="font-display text-lg font-semibold">No dilemmas yet. Suspiciously decisive 🤨</p>
+          <p className="mt-1 text-sm text-muted-foreground">Nothing to judge yet. Be the first to ask.</p>
           <Button asChild variant="hero" className="mt-5 h-11 px-6">
             <Link to="/new">New question</Link>
           </Button>
