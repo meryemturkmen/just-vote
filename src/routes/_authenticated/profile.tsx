@@ -48,7 +48,7 @@ function Profile() {
   async function saveCats() {
     try {
       await saveInterests(user.id, interests);
-      toast.success("Interests saved!");
+      toast.success("Vibe saved ✨");
       qc.invalidateQueries();
     } catch (e) {
       toast.error((e as Error).message);
@@ -58,7 +58,7 @@ function Profile() {
   async function save() {
     const { error } = await supabase.from("profiles").update({ display_name: name.trim() }).eq("id", user.id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Saved!");
+    toast.success("Saved ✨");
     qc.invalidateQueries();
   }
 
@@ -70,13 +70,13 @@ function Profile() {
   }
 
   return (
-    <AppShell title="Profile">
-      <div className="flex items-center gap-4 rounded-3xl bg-primary-soft p-5">
-        <span className="grid size-16 place-items-center rounded-full bg-primary font-display text-2xl font-bold text-primary-foreground">
+    <AppShell title="It's you!">
+      <div className="flex items-center gap-4 rounded-2xl bg-yellow p-5 brut">
+        <span className="grid size-16 place-items-center rounded-xl bg-primary font-display text-2xl font-extrabold brut-sm tilt-l text-foreground">
           {(name || user.email || "?").charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="truncate font-display text-lg font-semibold">{name || "Hi there!"}</p>
+          <p className="truncate font-display text-lg font-semibold">{name || "Mystery voter"}</p>
           <p className="truncate text-sm text-muted-foreground">{user.email}</p>
         </div>
       </div>
@@ -85,22 +85,22 @@ function Profile() {
         <Stat n={stats.data?.streak ?? 0} label={`🔥 Day streak`} />
       </div>
       <p className="mt-2 px-1 text-xs text-muted-foreground">
-        Earn 1 point per vote, 2 in your interest categories. Spend 10 to boost a question for 24 hours. Vote every day to grow your streak!
+        1 pt per vote, 2 in your fave categories. Spend 10 to boost a question for 24h. Vote daily or the streak dies 💀
       </p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat n={data?.questions ?? 0} label="Questions asked" />
         <Stat n={data?.votes ?? 0} label="Votes cast" />
       </div>
-      <div className="mt-6 rounded-3xl border bg-card p-4 shadow-card">
-        <p className="mb-3 font-display font-semibold">Your interests</p>
+      <div className="mt-6 rounded-2xl bg-card p-4 brut">
+        <p className="mb-3 font-display font-semibold">Your vibe</p>
         <InterestPicker value={interests} onChange={setInterests} />
-        <Button variant="hero" className="mt-4 h-11 w-full" onClick={saveCats}>Save interests</Button>
+        <Button variant="hero" className="mt-4 h-11 w-full" onClick={saveCats}>Save vibe</Button>
       </div>
       <div className="mt-6 space-y-3">
         <label className="text-sm font-medium">Display name</label>
         <Input className="h-12 rounded-2xl" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
         <Button variant="hero" className="h-12 w-full" onClick={save}>Save</Button>
-        <Button variant="soft" className="h-12 w-full" onClick={signOut}>Sign out</Button>
+        <Button variant="soft" className="h-12 w-full" onClick={signOut}>Log out</Button>
       </div>
     </AppShell>
   );
@@ -108,8 +108,8 @@ function Profile() {
 
 function Stat({ n, label }: { n: number; label: string }) {
   return (
-    <div className="rounded-3xl border bg-card p-4 shadow-card">
-      <p className="font-display text-3xl font-bold text-primary">{n}</p>
+    <div className="rounded-2xl bg-card p-4 brut">
+      <p className="font-display text-3xl font-bold text-foreground">{n}</p>
       <p className="text-xs text-muted-foreground">{label}</p>
     </div>
   );

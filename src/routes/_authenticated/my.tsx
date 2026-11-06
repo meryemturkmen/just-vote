@@ -36,12 +36,12 @@ function Mine() {
   const [deciding, setDeciding] = useState<Question | null>(null);
 
   return (
-    <AppShell title="My Questions">
-      {isLoading && <div className="h-40 animate-pulse rounded-3xl bg-muted" />}
+    <AppShell title="My dilemmas">
+      {isLoading && <div className="h-40 animate-pulse rounded-2xl bg-muted" />}
       {data?.length === 0 && (
-        <div className="rounded-3xl bg-primary-soft p-8 text-center">
+        <div className="rounded-2xl bg-yellow p-8 text-center brut tilt-l">
           <p className="font-display text-lg font-semibold">Nothing here yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">Torn between two things? Ask away.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Torn between two things? The internet is waiting.</p>
           <Button asChild variant="hero" className="mt-5 h-11 px-6">
             <Link to="/new">New question</Link>
           </Button>
@@ -61,10 +61,10 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
   const closed = isClosed(q);
   const decided = decisionLabel(q.decided_choice);
   return (
-    <article className="rounded-3xl border bg-card p-4 shadow-card">
+    <article className="rounded-2xl bg-card p-4 brut">
       <div className="flex items-center gap-2">
         <CategoryTag category={q.category} />
-        {!closed && <span className="flex items-center gap-1 text-[11px] font-semibold text-primary"><span className="size-1.5 animate-pulse rounded-full bg-primary" /> Live</span>}
+        {!closed && <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground"><span className="size-1.5 animate-pulse rounded-full bg-primary" /> Live</span>}
         <span className="ml-auto text-[11px] font-medium text-muted-foreground">{decided ?? timeLeft(q.ends_at)}</span>
       </div>
       <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-lg font-semibold leading-snug">
@@ -80,7 +80,7 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
               <div className="relative aspect-square">
                 {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="size-full object-cover" />}
                 <span className="absolute left-2 top-2 grid size-7 place-items-center rounded-full bg-card text-xs font-bold">{c.toUpperCase()}</span>
-                {chosen && <CheckCircle2 className="absolute right-2 top-2 size-6 rounded-full bg-card text-primary" />}
+                {chosen && <CheckCircle2 className="absolute right-2 top-2 size-6 rounded-full bg-card text-foreground" />}
               </div>
               <div className="p-2.5">
                 <div className="h-2 overflow-hidden rounded-full bg-border">
@@ -113,7 +113,7 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
   const decide = useMutation({
     mutationFn: (c: "a" | "b" | "neither") => decideQuestion(q!.id, c),
     onSuccess: () => {
-      toast.success("Nice! Enjoy your new buy 🛍️");
+      toast.success("Congrats on the new buy 🛍️");
       qc.invalidateQueries({ queryKey: ["questions"] });
       onClose();
     },
@@ -123,8 +123,8 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
     <Drawer open={!!q} onOpenChange={(o) => !o && onClose()}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle className="font-display text-xl">What did you choose?</DrawerTitle>
-          <DrawerDescription>This closes voting and shows everyone your pick.</DrawerDescription>
+          <DrawerTitle className="font-display text-xl">So… what did you get? 👀</DrawerTitle>
+          <DrawerDescription>This ends voting and tells everyone your pick.</DrawerDescription>
         </DrawerHeader>
         {q && (
           <div className="px-4 pb-6">
@@ -143,7 +143,7 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
               ))}
             </div>
             <Button variant="ghost" className="mt-3 h-11 w-full" disabled={decide.isPending} onClick={() => decide.mutate("neither")}>
-              Neither — I'll keep looking
+              Neither. Back to scrolling 🫠
             </Button>
           </div>
         )}
@@ -157,13 +157,13 @@ function BoostButton({ q }: { q: Question }) {
   const boost = useMutation({
     mutationFn: () => boostQuestion(q.id),
     onSuccess: () => {
-      toast.success("Boosted for 24 hours 🚀");
+      toast.success("Boosted! 24h of main character energy 🚀");
       qc.invalidateQueries({ queryKey: ["questions"] });
       qc.invalidateQueries({ queryKey: ["stats"] });
     },
     onError: (e: Error) => toast.error(e.message),
   });
-  if (isBoosted(q)) return <span className="self-center text-xs font-semibold text-primary">🚀 Boosted</span>;
+  if (isBoosted(q)) return <span className="self-center text-xs font-semibold text-foreground">🚀 Boosted</span>;
   return (
     <Button variant="soft" className="h-9 px-3 text-xs" disabled={boost.isPending} onClick={() => boost.mutate()}>
       🚀 Boost · {BOOST_COST} pts
