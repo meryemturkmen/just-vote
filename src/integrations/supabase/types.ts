@@ -175,7 +175,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      feed_page: {
+        Args: {
+          p_category: string
+          p_interests: string[]
+          p_limit: number
+          p_offset: number
+          p_sort: string
+          p_voter: string
+        }
+        Returns: {
+          id: string
+          matched: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
