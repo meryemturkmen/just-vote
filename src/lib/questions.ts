@@ -16,6 +16,10 @@ export type Question = {
   votesA: number;
   votesB: number;
   myVote: "a" | "b" | null;
+  occasion: string | null;
+  budget: string | null;
+  visibility: string;
+  ends_at: string | null;
 };
 
 type Row = {
@@ -28,6 +32,10 @@ type Row = {
   option_b_label: string;
   option_b_image: string;
   created_at: string;
+  occasion: string | null;
+  budget: string | null;
+  visibility: string;
+  ends_at: string | null;
   profiles: { display_name: string | null } | null;
   votes: { choice: string; user_id: string }[];
 };
@@ -55,6 +63,10 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
     option_a_url: urls[r.option_a_image] ?? "",
     option_b_url: urls[r.option_b_image] ?? "",
     created_at: r.created_at,
+    occasion: r.occasion,
+    budget: r.budget,
+    visibility: r.visibility,
+    ends_at: r.ends_at,
     author: r.profiles?.display_name ?? "Someone",
     votesA: r.votes.filter((v) => v.choice === "a").length,
     votesB: r.votes.filter((v) => v.choice === "b").length,
@@ -73,7 +85,7 @@ export function guestId() {
 }
 
 export async function fetchFeed(categories?: string[]) {
-  let q = supabase.from("questions").select(SELECT).order("created_at", { ascending: false }).limit(50);
+  let q = supabase.from("questions").select(SELECT).eq("visibility", "public").order("created_at", { ascending: false }).limit(50);
   if (categories && categories.length) q = q.in("category", categories);
   const { data, error } = await q;
   if (error) throw error;
@@ -112,4 +124,41 @@ export function percent(a: number, b: number) {
   if (!total) return [0, 0] as const;
   const pa = Math.round((a / total) * 100);
   return [pa, 100 - pa] as const;
+}
+
+export function isClosed(q: { ends_at: string | null }, now = Date.now()) {
+  return !!q.ends_at && new Date(q.ends_at).getTime() <= now;
+}
+
+export function timeLeft(endsAt: string | null, now = Date.now()) {
+  if (!endsAt) return "";
+  const ms = new Date(endsAt).getTime() - now;
+  if (ms <= 0) return "Voting closed";
+  const h = Math.floor(ms / 3600000);
+  const m = Math.floor((ms % 3600000) / 60000);
+  if (h >= 24) return `${Math.floor(h / 24)}d ${h % 24}h left`;
+  if (h >= 1) return `${h}h ${m}m left`;
+  return `${Math.max(m, 1)}m left`;
+}
+
+export function displayTitle(q: { title: string }) {
+  return q.title.trim() || "Which one should I buy?";
+}
+
+export function shareUrl(id: string) {
+  return `${window.location.origin}/q/${id}`;
+}
+
+export async function shareQuestion(id: string, title: string) {
+  const url = shareUrl(id);
+  const text = `${title} Help me decide on Just Vote 🗳️`;
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: "Just Vote", text, url });
+      return;
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return;
+    }
+  }
+  window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, "_blank", "noopener");
 }
