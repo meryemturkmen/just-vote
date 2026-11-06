@@ -6,6 +6,9 @@ import { AppShell } from "@/components/AppShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
+import { InterestPicker } from "@/components/InterestPicker";
+import { saveInterests } from "@/lib/profile";
+import { CATEGORIES } from "@/lib/categories";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -29,15 +32,26 @@ function Profile() {
     queryKey: ["profile", user.id],
     queryFn: async () => {
       const [p, q, v] = await Promise.all([
-        supabase.from("profiles").select("display_name").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("display_name, interests").eq("id", user.id).maybeSingle(),
         supabase.from("questions").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("votes").select("id", { count: "exact", head: true }).eq("user_id", user.id),
       ]);
-      return { name: p.data?.display_name ?? "", questions: q.count ?? 0, votes: v.count ?? 0 };
+      return { name: p.data?.display_name ?? "", interests: p.data?.interests ?? [...CATEGORIES], questions: q.count ?? 0, votes: v.count ?? 0 };
     },
   });
   const [name, setName] = useState("");
-  useEffect(() => { if (data) setName(data.name); }, [data]);
+  const [interests, setInterests] = useState<string[]>([...CATEGORIES]);
+  useEffect(() => { if (data) { setName(data.name); setInterests(data.interests); } }, [data]);
+
+  async function saveCats() {
+    try {
+      await saveInterests(user.id, interests);
+      toast.success("Interests saved!");
+      qc.invalidateQueries();
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
 
   async function save() {
     const { error } = await supabase.from("profiles").update({ display_name: name.trim() }).eq("id", user.id);
@@ -67,6 +81,11 @@ function Profile() {
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat n={data?.questions ?? 0} label="Questions asked" />
         <Stat n={data?.votes ?? 0} label="Votes cast" />
+      </div>
+      <div className="mt-6 rounded-3xl border bg-card p-4 shadow-card">
+        <p className="mb-3 font-display font-semibold">Your interests</p>
+        <InterestPicker value={interests} onChange={setInterests} />
+        <Button variant="hero" className="mt-4 h-11 w-full" onClick={saveCats}>Save interests</Button>
       </div>
       <div className="mt-6 space-y-3">
         <label className="text-sm font-medium">Display name</label>

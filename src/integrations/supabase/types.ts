@@ -19,21 +19,28 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          interests: string[]
+          onboarded: boolean
         }
         Insert: {
           created_at?: string
           display_name?: string | null
           id: string
+          interests?: string[]
+          onboarded?: boolean
         }
         Update: {
           created_at?: string
           display_name?: string | null
           id?: string
+          interests?: string[]
+          onboarded?: boolean
         }
         Relationships: []
       }
       questions: {
         Row: {
+          category: string
           created_at: string
           id: string
           option_a_image: string
@@ -44,6 +51,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category?: string
           created_at?: string
           id?: string
           option_a_image: string
@@ -54,6 +62,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category?: string
           created_at?: string
           id?: string
           option_a_image?: string
@@ -75,6 +84,7 @@ export type Database = {
       }
       votes: {
         Row: {
+          anonymous: boolean
           choice: string
           created_at: string
           id: string
@@ -82,6 +92,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          anonymous?: boolean
           choice: string
           created_at?: string
           id?: string
@@ -89,6 +100,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          anonymous?: boolean
           choice?: string
           created_at?: string
           id?: string

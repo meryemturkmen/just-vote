@@ -8,6 +8,13 @@
       "when": 1793975065118,
       "tag": "0000_just_vote_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793975442447,
+      "tag": "0001_categories_interests_anon_votes",
+      "breakpoints": true
     }
   ]
 }

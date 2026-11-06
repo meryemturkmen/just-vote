@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { BUCKET } from "@/lib/questions";
+import { CATEGORIES, isCategory } from "@/lib/categories";
+import { Chip } from "@/components/CategoryChips";
 
 export const Route = createFileRoute("/_authenticated/new")({
   head: () => ({
@@ -32,6 +34,7 @@ function NewQuestion() {
   const [title, setTitle] = useState("");
   const [a, setA] = useState<Opt>({ file: null, preview: "", label: "" });
   const [b, setB] = useState<Opt>({ file: null, preview: "", label: "" });
+  const [category, setCategory] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
   async function upload(f: File) {
@@ -44,6 +47,7 @@ function NewQuestion() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isCategory(category)) { toast.error("Please pick a category"); return; }
     if (!a.file || !b.file) { toast.error("Please add a photo for both options"); return; }
     setBusy(true);
     try {
@@ -53,6 +57,7 @@ function NewQuestion() {
         .insert({
           user_id: user.id,
           title: title.trim(),
+          category,
           option_a_label: a.label.trim(),
           option_a_image: pa,
           option_b_label: b.label.trim(),
@@ -82,6 +87,14 @@ function NewQuestion() {
           maxLength={120}
           required
         />
+        <div>
+          <p className="mb-2 text-sm font-semibold">Category <span className="text-primary">*</span></p>
+          <div className="flex flex-wrap gap-2">
+            {CATEGORIES.map((c) => (
+              <Chip key={c} active={category === c} onClick={() => setCategory(c)}>{c}</Chip>
+            ))}
+          </div>
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <Picker name="Option A" opt={a} set={setA} />
           <Picker name="Option B" opt={b} set={setB} />
