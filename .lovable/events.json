@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "events": {
+    "project.question_created": {
+      "event_schema_version": 1,
+      "description": "A user posted a new question.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "visibility",
+          "duration_hours"
+        ],
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "link"
+            ]
+          },
+          "duration_hours": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "project.share_clicked": {
+      "event_schema_version": 1,
+      "description": "A share button (link, story card, or post-create share) was tapped.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "channel"
+        ],
+        "properties": {
+          "channel": {
+            "type": "string",
+            "enum": [
+              "link",
+              "story",
+              "confirm"
+            ]
+          }
+        }
+      }
+    },
+    "project.shared_link_opened": {
+      "event_schema_version": 1,
+      "description": "Someone opened a question via a shared link.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
+    "project.sign_up": {
+      "event_schema_version": 1,
+      "description": "A new account was created and signed in for the first time.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "method"
+        ],
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "email",
+              "google"
+            ]
+          }
+        }
+      }
+    },
+    "project.vote_cast": {
+      "event_schema_version": 1,
+      "description": "A vote was successfully cast on a question.",
+      "privacy": {
+        "contains_pii": false,
+        "purpose": "product_analytics"
+      },
+      "properties_schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "choice",
+          "signed_in"
+        ],
+        "properties": {
+          "choice": {
+            "type": "string",
+            "enum": [
+              "a",
+              "b"
+            ]
+          },
+          "signed_in": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}
