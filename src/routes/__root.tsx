@@ -126,8 +126,16 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_IN" && session) {
+        setTimeout(async () => {
+          const { data: p } = await supabase.from("profiles").select("onboarded").eq("id", session.user.id).maybeSingle();
+          if (p && !p.onboarded && router.state.location.pathname !== "/onboarding") {
+            router.navigate({ to: "/onboarding" });
+          }
+        }, 0);
+      }
       router.invalidate();
       queryClient.invalidateQueries();
     });
