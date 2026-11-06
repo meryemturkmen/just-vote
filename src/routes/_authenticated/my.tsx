@@ -94,7 +94,7 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
         })}
       </div>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">{total} {total === 1 ? "vote" : "votes"}</p>
+        <p className="text-xs text-muted-foreground">{total} {total === 1 ? "vote" : "votes"} · 💬 {q.commentCount}</p>
         {q.decided_choice ? (
           <Button asChild variant="soft" className="h-9 px-4 text-xs"><Link to="/q/$id" params={{ id: q.id }}>Final results</Link></Button>
         ) : (

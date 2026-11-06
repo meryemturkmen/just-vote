@@ -16,5 +16,7 @@ export const PROFANITY_MSG = "Whoa, language 🧼 Keep it clean and try again.";
 export function friendlyDbError(message: string) {
   if (message.includes("profanity_blocked")) return PROFANITY_MSG;
   if (message.includes("daily_question_limit")) return "That's 10 questions today. Chill till tomorrow 😮‍💨";
+  if (message.includes("vote_first")) return "Vote first, then spill the tea 🗳️";
+  if (message.includes("comment_rate_limit")) return "Slow down, speedrunner 🏎️ Try again in a minute.";
   return message;
 }
