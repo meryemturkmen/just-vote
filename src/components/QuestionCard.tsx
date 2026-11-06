@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
@@ -6,11 +7,16 @@ import { castVote, displayTitle, isClosed, percent, timeLeft, type Question } fr
 import { cn } from "@/lib/utils";
 import { CategoryTag } from "@/components/CategoryChips";
 
-export function QuestionCard({ q, linked = true }: { q: Question; linked?: boolean }) {
+export function QuestionCard({ q: initial, linked = true }: { q: Question; linked?: boolean }) {
   const qc = useQueryClient();
+  const [q, setQ] = useState(initial);
   const vote = useMutation({
     mutationFn: (c: "a" | "b") => castVote(q.id, c),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["questions"] }),
+    // Update this card in place so it shows results; the feed hides it on next load.
+    onSuccess: (_d, c) => {
+      setQ((p) => ({ ...p, myVote: c, votesA: p.votesA + (c === "a" ? 1 : 0), votesB: p.votesB + (c === "b" ? 1 : 0) }));
+      qc.invalidateQueries({ queryKey: ["questions", "one", q.id] });
+    },
     onError: (e: Error) => toast.error(e.message),
   });
   const closed = isClosed(q);

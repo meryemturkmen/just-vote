@@ -199,3 +199,36 @@ export async function shareQuestion(id: string, title: string) {
   }
   window.open(`https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`, "_blank", "noopener");
 }
+
+export type FeedSort = "new" | "ending";
+export type FeedItem = Question & { matched: boolean };
+export const FEED_PAGE = 10;
+
+/** One page of the feed: open, public, not created or voted by me; my interests first. */
+export async function fetchFeedPage(opts: {
+  interests: string[] | null;
+  category: string | null;
+  sort: FeedSort;
+  offset: number;
+}): Promise<FeedItem[]> {
+  const { voterId } = { voterId: (await myVoterId()).id ?? null };
+  const { data, error } = await supabase.rpc("feed_page", {
+    p_voter: voterId as string,
+    p_interests: (opts.category ? null : opts.interests) as string[],
+    p_category: opts.category as string,
+    p_sort: opts.sort,
+    p_limit: FEED_PAGE,
+    p_offset: opts.offset,
+  });
+  if (error) throw error;
+  if (!data?.length) return [];
+  const ids = data.map((r) => r.id);
+  const { data: rows, error: e2 } = await supabase.from("questions").select(SELECT).in("id", ids);
+  if (e2) throw e2;
+  const hydrated = await hydrate(rows as unknown as Row[]);
+  const byId = new Map(hydrated.map((h) => [h.id, h]));
+  return data.flatMap((r) => {
+    const h = byId.get(r.id);
+    return h ? [{ ...h, matched: r.matched }] : [];
+  });
+}
