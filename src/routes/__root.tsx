@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { InstallHint } from "@/components/InstallHint";
 import { NetworkStatus } from "@/components/NetworkStatus";
+import { ConsentBanner } from "@/components/ConsentBanner";
 import { supabase } from "@/integrations/supabase/client";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -159,6 +160,7 @@ function RootComponent() {
       <Toaster position="top-center" />
       <InstallHint />
       <NetworkStatus />
+      <ConsentBanner />
     </QueryClientProvider>
   );
 }

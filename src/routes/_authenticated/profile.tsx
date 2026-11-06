@@ -10,6 +10,8 @@ import { InterestPicker } from "@/components/InterestPicker";
 import { saveInterests } from "@/lib/profile";
 import { fetchMyStats } from "@/lib/questions";
 import { CATEGORIES } from "@/lib/categories";
+import { deleteMyAccount } from "@/lib/account.functions";
+import { LegalLinks } from "@/components/LegalPage";
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -69,6 +71,23 @@ function Profile() {
     nav({ to: "/auth", replace: true });
   }
 
+  const [deleting, setDeleting] = useState(false);
+  async function nuke() {
+    if (!window.confirm("Delete your account and ALL your data? Questions, photos, votes, points — gone forever. No undo.")) return;
+    setDeleting(true);
+    try {
+      await deleteMyAccount();
+      await qc.cancelQueries();
+      qc.clear();
+      await supabase.auth.signOut();
+      toast.success("Account deleted. It was fun while it lasted 🫡");
+      nav({ to: "/", replace: true });
+    } catch (e) {
+      toast.error("Couldn't delete your account. Try again?", { description: (e as Error).message });
+      setDeleting(false);
+    }
+  }
+
   return (
     <AppShell title="It's you!">
       <div className="flex items-center gap-4 rounded-2xl bg-yellow p-5 brut">
@@ -101,6 +120,17 @@ function Profile() {
         <Input className="h-12 rounded-xl bg-card" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
         <Button variant="hero" className="h-12 w-full" onClick={save}>Save</Button>
         <Button variant="soft" className="h-12 w-full" onClick={signOut}>Log out</Button>
+      </div>
+      <div className="mt-8 rounded-2xl bg-card p-4 brut">
+        <p className="font-display font-semibold">Legal stuff</p>
+        <LegalLinks className="mt-3 justify-start text-sm" />
+      </div>
+      <div className="mt-6 rounded-2xl border-2 bg-destructive/10 p-4">
+        <p className="font-display font-semibold">Danger zone ☠️</p>
+        <p className="mt-1 text-sm">Removes your account, questions, photos, votes, comments and points. Forever.</p>
+        <Button variant="destructive" className="mt-3 h-12 w-full border-2 font-extrabold" disabled={deleting} onClick={nuke}>
+          {deleting ? "Deleting…" : "Delete my account and all my data"}
+        </Button>
       </div>
     </AppShell>
   );
