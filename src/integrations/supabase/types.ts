@@ -144,6 +144,107 @@ export type Database = {
           },
         ]
       }
+      crew_members: {
+        Row: {
+          crew_id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          crew_id: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          crew_id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crews: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          invite_code: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          invite_code?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          invite_code?: string
+          name?: string
+          owner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crews_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      follows: {
+        Row: {
+          created_at: string
+          followee_id: string
+          follower_id: string
+        }
+        Insert: {
+          created_at?: string
+          followee_id: string
+          follower_id: string
+        }
+        Update: {
+          created_at?: string
+          followee_id?: string
+          follower_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follows_followee_id_fkey"
+            columns: ["followee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follows_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           count: number
@@ -214,25 +315,34 @@ export type Database = {
       }
       profiles: {
         Row: {
+          avatar_color: string
+          avatar_emoji: string
           created_at: string
           display_name: string | null
           id: string
           interests: string[]
           onboarded: boolean
+          username: string | null
         }
         Insert: {
+          avatar_color?: string
+          avatar_emoji?: string
           created_at?: string
           display_name?: string | null
           id: string
           interests?: string[]
           onboarded?: boolean
+          username?: string | null
         }
         Update: {
+          avatar_color?: string
+          avatar_emoji?: string
           created_at?: string
           display_name?: string | null
           id?: string
           interests?: string[]
           onboarded?: boolean
+          username?: string | null
         }
         Relationships: []
       }
@@ -242,6 +352,7 @@ export type Database = {
           budget: string | null
           category: string
           created_at: string
+          crew_id: string | null
           decided_at: string | null
           decided_choice: string | null
           duration_hours: number
@@ -262,6 +373,7 @@ export type Database = {
           budget?: string | null
           category?: string
           created_at?: string
+          crew_id?: string | null
           decided_at?: string | null
           decided_choice?: string | null
           duration_hours?: number
@@ -282,6 +394,7 @@ export type Database = {
           budget?: string | null
           category?: string
           created_at?: string
+          crew_id?: string | null
           decided_at?: string | null
           decided_choice?: string | null
           duration_hours?: number
@@ -298,6 +411,13 @@ export type Database = {
           visibility?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "questions_crew_id_fkey"
+            columns: ["crew_id"]
+            isOneToOne: false
+            referencedRelation: "crews"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "questions_user_id_fkey"
             columns: ["user_id"]
@@ -484,6 +604,20 @@ export type Database = {
     Functions: {
       admin_stats: { Args: { p_days?: number }; Returns: Json }
       boost_question: { Args: { p_question: string }; Returns: string }
+      create_crew: {
+        Args: { p_emoji: string; p_name: string }
+        Returns: string
+      }
+      crew_preview: {
+        Args: { p_code: string }
+        Returns: {
+          emoji: string
+          id: string
+          is_member: boolean
+          members: number
+          name: string
+        }[]
+      }
       decide_question: {
         Args: { p_choice: string; p_question: string }
         Returns: undefined
@@ -510,6 +644,22 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_crew_member: {
+        Args: { _crew: string; _user: string }
+        Returns: boolean
+      }
+      join_crew: { Args: { p_code: string }; Returns: string }
+      leaderboard: {
+        Args: { p_category: string; p_scope?: string }
+        Returns: {
+          avatar_color: string
+          avatar_emoji: string
+          display_name: string
+          points: number
+          user_id: string
+          username: string
+        }[]
+      }
       my_stats: {
         Args: never
         Returns: {
@@ -517,6 +667,23 @@ export type Database = {
           streak: number
         }[]
       }
+      public_profile: {
+        Args: { p_username: string }
+        Returns: {
+          avatar_color: string
+          avatar_emoji: string
+          display_name: string
+          followers: number
+          following: number
+          i_follow: boolean
+          id: string
+          top_categories: string[]
+          username: string
+          votes: number
+          week_points: number
+        }[]
+      }
+      reset_crew_invite: { Args: { p_crew: string }; Returns: string }
       set_comment_hidden: {
         Args: { p_comment: string; p_hidden: boolean }
         Returns: undefined
