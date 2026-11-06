@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { Flag, Vote } from "lucide-react";
+import { Flag, MessageCircle, Vote } from "lucide-react";
 import { ListSkeleton } from "@/components/Skeleton";
 import { AppShell } from "@/components/AppShell";
 import { fetchNotifications, markAllRead, notificationText } from "@/lib/notifications";
@@ -44,7 +44,7 @@ function Notifications() {
           <li key={n.id}>
             <Link to="/q/$id" params={{ id: n.question_id }} className={cn("flex items-center gap-3 rounded-2xl bg-card p-4 brut", !n.read && "bg-yellow")}>
               <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary brut-sm">
-                {n.kind === "ended" ? <Flag className="size-5" /> : <Vote className="size-5" />}
+                {n.kind === "ended" ? <Flag className="size-5" /> : n.kind === "comments" ? <MessageCircle className="size-5" /> : <Vote className="size-5" />}
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{n.title}</p>

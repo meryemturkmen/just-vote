@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type AppNotification = {
   id: string;
   question_id: string;
-  kind: "votes" | "ended";
+  kind: "votes" | "ended" | "comments";
   count: number;
   read: boolean;
   updated_at: string;
@@ -21,7 +21,7 @@ export async function fetchNotifications(): Promise<AppNotification[]> {
   return data.map((n) => ({
     id: n.id,
     question_id: n.question_id,
-    kind: n.kind as "votes" | "ended",
+    kind: n.kind as AppNotification["kind"],
     count: n.count,
     read: n.read,
     updated_at: n.updated_at,
@@ -36,5 +36,6 @@ export async function markAllRead() {
 
 export function notificationText(n: Pick<AppNotification, "kind" | "count">) {
   if (n.kind === "ended") return "Voting has ended — see the final results";
+  if (n.kind === "comments") return n.count === 1 ? "1 new comment 💬" : `${n.count} new comments 💬`;
   return n.count === 1 ? "1 new vote" : `${n.count} new votes`;
 }

@@ -69,10 +69,11 @@ export function QuestionCard({ q: initial }: { q: Question }) {
           <p className="animate-pop inline-block rounded-lg bg-yellow px-3 py-2 font-display text-lg font-extrabold leading-tight brut-sm">
             {q.myVote ? verdictLine(myShare(q.myVote, pa, pb), total) : "Voting's over. Here's the tea ☕"}
           </p>
+          <Link to="/q/$id" params={{ id: q.id }} className="inline-block rounded-md bg-card px-2.5 py-1 text-xs font-extrabold brut-sm tilt-r">💬 {q.commentCount} {q.commentCount === 1 ? "comment" : "comments"} →</Link>
           <ShareButtons q={q} />
         </div>
       ) : (
-        <p className="text-center text-sm font-bold">Pick one. No pressure. 👆 <span className="text-muted-foreground">· {total} voted</span></p>
+        <p className="text-center text-sm font-bold">Pick one. No pressure. 👆 <span className="text-muted-foreground">· {total} voted · 💬 {q.commentCount}</span></p>
       )}
     </article>
   );

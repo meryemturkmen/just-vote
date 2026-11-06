@@ -19,6 +19,7 @@ export type Question = {
   votesA: number;
   votesB: number;
   myVote: "a" | "b" | null;
+  commentCount: number;
   occasion: string | null;
   budget: string | null;
   visibility: string;
@@ -46,9 +47,10 @@ type Row = {
   boosted_until: string | null;
   profiles: { display_name: string | null } | null;
   votes: { choice: string; user_id: string }[];
+  comments?: { count: number }[];
 };
 
-const SELECT = "*, profiles(display_name), votes(choice, user_id)";
+const SELECT = "*, profiles(display_name), votes(choice, user_id), comments(count)";
 
 async function hydrate(rows: Row[]): Promise<Question[]> {
   const { data: { session } } = await supabase.auth.getSession();
@@ -81,6 +83,7 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
     author: r.profiles?.display_name ?? "Someone",
     votesA: r.votes.filter((v) => v.choice === "a").length,
     votesB: r.votes.filter((v) => v.choice === "b").length,
+    commentCount: r.comments?.[0]?.count ?? 0,
     myVote: (r.votes.find((v) => v.user_id === uid)?.choice as "a" | "b" | undefined) ?? null,
   }));
 }

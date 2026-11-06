@@ -21,6 +21,8 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
 
     const steps = [
       supabaseAdmin.from("vote_feedback").delete().eq("voter_id", uid),
+      supabaseAdmin.from("comments").delete().eq("author_id", uid),
+      supabaseAdmin.from("comment_reactions").delete().eq("reactor_id", uid),
       supabaseAdmin.from("votes").delete().eq("user_id", uid),
       supabaseAdmin.from("reports").delete().eq("reporter_id", uid),
       supabaseAdmin.from("notifications").delete().eq("user_id", uid),

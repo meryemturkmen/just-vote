@@ -14,6 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
+      comment_reactions: {
+        Row: {
+          anonymous: boolean
+          comment_id: string
+          created_at: string
+          emoji: string
+          id: string
+          reactor_id: string
+        }
+        Insert: {
+          anonymous?: boolean
+          comment_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          reactor_id: string
+        }
+        Update: {
+          anonymous?: boolean
+          comment_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          reactor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comment_reports: {
+        Row: {
+          anonymous: boolean
+          comment_id: string
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          anonymous?: boolean
+          comment_id: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          anonymous?: boolean
+          comment_id?: string
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comment_reports_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      comments: {
+        Row: {
+          anonymous: boolean
+          author_id: string
+          body: string
+          choice: string
+          created_at: string
+          hidden: boolean
+          id: string
+          parent_id: string | null
+          question_id: string
+          tags: string[]
+        }
+        Insert: {
+          anonymous?: boolean
+          author_id: string
+          body?: string
+          choice?: string
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          parent_id?: string | null
+          question_id: string
+          tags?: string[]
+        }
+        Update: {
+          anonymous?: boolean
+          author_id?: string
+          body?: string
+          choice?: string
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          parent_id?: string | null
+          question_id?: string
+          tags?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           count: number
@@ -387,7 +517,15 @@ export type Database = {
           streak: number
         }[]
       }
+      set_comment_hidden: {
+        Args: { p_comment: string; p_hidden: boolean }
+        Returns: undefined
+      }
       sync_ended_notifications: { Args: never; Returns: undefined }
+      toggle_reaction: {
+        Args: { p_comment: string; p_emoji: string; p_guest?: string }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

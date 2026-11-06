@@ -1,0 +1,147 @@
+CREATE TABLE public.comments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  question_id uuid NOT NULL REFERENCES public.questions(id) ON DELETE CASCADE,
+  parent_id uuid REFERENCES public.comments(id) ON DELETE CASCADE,
+  author_id uuid NOT NULL,
+  anonymous boolean NOT NULL DEFAULT false,
+  choice text NOT NULL DEFAULT 'a' CHECK (choice IN ('a','b')),
+  body text NOT NULL DEFAULT '' CHECK (char_length(body) <= 200),
+  tags text[] NOT NULL DEFAULT '{}' CHECK (tags <@ ARRAY['Design','Quality','Price','Style','Features']),
+  hidden boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CHECK (char_length(btrim(body)) > 0 OR cardinality(tags) > 0)
+);
+CREATE INDEX comments_question_idx ON public.comments (question_id, created_at DESC);
+CREATE INDEX comments_parent_idx ON public.comments (parent_id);
+GRANT SELECT ON public.comments TO anon;
+GRANT SELECT, INSERT ON public.comments TO authenticated;
+GRANT ALL ON public.comments TO service_role;
+ALTER TABLE public.comments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Visible comments readable" ON public.comments FOR SELECT TO public USING (
+  NOT hidden OR auth.uid() = author_id
+  OR EXISTS (SELECT 1 FROM public.questions q WHERE q.id = question_id AND q.user_id = auth.uid())
+  OR public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "Members comment" ON public.comments FOR INSERT TO authenticated WITH CHECK (auth.uid() = author_id AND anonymous = false AND hidden = false);
+CREATE POLICY "Guests comment" ON public.comments FOR INSERT TO anon WITH CHECK (anonymous = true AND hidden = false);
+GRANT INSERT ON public.comments TO anon;
+CREATE POLICY "Admins delete comments" ON public.comments FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+GRANT DELETE ON public.comments TO authenticated;
+
+-- backfill old single feedback
+INSERT INTO public.comments (question_id, author_id, anonymous, choice, body, tags, created_at)
+SELECT f.question_id, f.voter_id, f.anonymous, v.choice, coalesce(f.comment, ''), f.tags, f.created_at
+FROM public.vote_feedback f JOIN public.votes v ON v.question_id = f.question_id AND v.user_id = f.voter_id
+WHERE v.choice IN ('a','b') AND (coalesce(btrim(f.comment), '') <> '' OR cardinality(f.tags) > 0);
+COMMENT ON TABLE public.vote_feedback IS 'DEPRECATED: replaced by public.comments';
+
+CREATE OR REPLACE FUNCTION public.prepare_comment() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
+DECLARE c text; p record;
+BEGIN
+  NEW.body := btrim(NEW.body);
+  IF public.has_profanity(NEW.body) THEN RAISE EXCEPTION 'profanity_blocked' USING ERRCODE = 'P0001'; END IF;
+  SELECT choice INTO c FROM public.votes WHERE question_id = NEW.question_id AND user_id = NEW.author_id;
+  IF c IS NULL THEN RAISE EXCEPTION 'vote_first' USING ERRCODE = 'P0001'; END IF;
+  NEW.choice := c;
+  IF NEW.parent_id IS NOT NULL THEN
+    SELECT question_id, parent_id INTO p FROM public.comments WHERE id = NEW.parent_id;
+    IF NOT FOUND OR p.question_id <> NEW.question_id THEN RAISE EXCEPTION 'Bad parent'; END IF;
+    IF p.parent_id IS NOT NULL THEN NEW.parent_id := p.parent_id; END IF; -- flatten to one level
+    NEW.tags := '{}';
+  END IF;
+  IF (SELECT count(*) FROM public.comments WHERE author_id = NEW.author_id AND created_at > now() - interval '1 minute') >= 5 THEN
+    RAISE EXCEPTION 'comment_rate_limit' USING ERRCODE = 'P0001';
+  END IF;
+  NEW.hidden := false; NEW.created_at := now();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER comments_prepare BEFORE INSERT ON public.comments FOR EACH ROW EXECUTE FUNCTION public.prepare_comment();
+
+ALTER TABLE public.notifications DROP CONSTRAINT notifications_kind_check;
+ALTER TABLE public.notifications ADD CONSTRAINT notifications_kind_check CHECK (kind IN ('votes','ended','comments'));
+CREATE UNIQUE INDEX notifications_unread_comments_uniq ON public.notifications (question_id) WHERE kind = 'comments' AND read = false;
+
+CREATE OR REPLACE FUNCTION public.notify_new_comment() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
+DECLARE owner uuid;
+BEGIN
+  SELECT user_id INTO owner FROM public.questions WHERE id = NEW.question_id;
+  IF owner IS NULL OR owner = NEW.author_id THEN RETURN NEW; END IF;
+  INSERT INTO public.notifications (user_id, question_id, kind) VALUES (owner, NEW.question_id, 'comments')
+  ON CONFLICT (question_id) WHERE kind = 'comments' AND read = false
+  DO UPDATE SET count = public.notifications.count + 1, updated_at = now();
+  RETURN NEW;
+END $$;
+CREATE TRIGGER comments_notify AFTER INSERT ON public.comments FOR EACH ROW EXECUTE FUNCTION public.notify_new_comment();
+
+CREATE OR REPLACE FUNCTION public.set_comment_hidden(p_comment uuid, p_hidden boolean) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
+BEGIN
+  UPDATE public.comments c SET hidden = p_hidden
+  WHERE c.id = p_comment AND (public.has_role(auth.uid(), 'admin')
+    OR EXISTS (SELECT 1 FROM public.questions q WHERE q.id = c.question_id AND q.user_id = auth.uid()));
+  IF NOT FOUND THEN RAISE EXCEPTION 'Not allowed'; END IF;
+END $$;
+GRANT EXECUTE ON FUNCTION public.set_comment_hidden(uuid, boolean) TO authenticated;
+
+CREATE TABLE public.comment_reactions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  comment_id uuid NOT NULL REFERENCES public.comments(id) ON DELETE CASCADE,
+  reactor_id uuid NOT NULL,
+  anonymous boolean NOT NULL DEFAULT false,
+  emoji text NOT NULL CHECK (emoji IN ('🔥','😂','💯','👀','💀')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (comment_id, reactor_id)
+);
+GRANT SELECT ON public.comment_reactions TO anon, authenticated;
+GRANT ALL ON public.comment_reactions TO service_role;
+ALTER TABLE public.comment_reactions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Reactions readable" ON public.comment_reactions FOR SELECT TO public USING (true);
+
+ALTER TABLE public.points_ledger DROP CONSTRAINT points_ledger_reason_check;
+ALTER TABLE public.points_ledger ADD CONSTRAINT points_ledger_reason_check CHECK (reason IN ('vote','vote_interest','boost','reaction','reaction_removed'));
+
+-- one reaction per person per comment; same emoji again removes it, another emoji switches
+CREATE OR REPLACE FUNCTION public.toggle_reaction(p_comment uuid, p_emoji text, p_guest uuid DEFAULT NULL) RETURNS text LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public' AS $$
+DECLARE me uuid := coalesce(auth.uid(), p_guest); anon boolean := auth.uid() IS NULL; cur text; c record;
+BEGIN
+  IF me IS NULL THEN RAISE EXCEPTION 'No voter'; END IF;
+  IF p_emoji NOT IN ('🔥','😂','💯','👀','💀') THEN RAISE EXCEPTION 'Bad emoji'; END IF;
+  SELECT * INTO c FROM public.comments WHERE id = p_comment AND NOT hidden;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Comment not found'; END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.votes WHERE question_id = c.question_id AND user_id = me) THEN RAISE EXCEPTION 'vote_first'; END IF;
+  SELECT emoji INTO cur FROM public.comment_reactions WHERE comment_id = p_comment AND reactor_id = me;
+  IF cur = p_emoji THEN
+    DELETE FROM public.comment_reactions WHERE comment_id = p_comment AND reactor_id = me;
+    IF NOT c.anonymous AND c.author_id <> me THEN
+      INSERT INTO public.points_ledger (user_id, delta, reason, question_id) VALUES (c.author_id, -1, 'reaction_removed', c.question_id);
+    END IF;
+    RETURN NULL;
+  ELSIF cur IS NOT NULL THEN
+    UPDATE public.comment_reactions SET emoji = p_emoji WHERE comment_id = p_comment AND reactor_id = me;
+  ELSE
+    INSERT INTO public.comment_reactions (comment_id, reactor_id, anonymous, emoji) VALUES (p_comment, me, anon, p_emoji);
+    IF NOT c.anonymous AND c.author_id <> me THEN
+      INSERT INTO public.points_ledger (user_id, delta, reason, question_id) VALUES (c.author_id, 1, 'reaction', c.question_id);
+    END IF;
+  END IF;
+  RETURN p_emoji;
+END $$;
+GRANT EXECUTE ON FUNCTION public.toggle_reaction(uuid, text, uuid) TO anon, authenticated;
+
+CREATE TABLE public.comment_reports (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  comment_id uuid NOT NULL REFERENCES public.comments(id) ON DELETE CASCADE,
+  reporter_id uuid NOT NULL,
+  anonymous boolean NOT NULL DEFAULT false,
+  reason text NOT NULL CHECK (reason IN ('inappropriate','faces_without_consent','spam','other')),
+  details text CHECK (details IS NULL OR char_length(details) <= 300),
+  status text NOT NULL DEFAULT 'open' CHECK (status IN ('open','removed','dismissed')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (comment_id, reporter_id)
+);
+GRANT INSERT ON public.comment_reports TO anon;
+GRANT SELECT, INSERT, UPDATE ON public.comment_reports TO authenticated;
+GRANT ALL ON public.comment_reports TO service_role;
+ALTER TABLE public.comment_reports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Members report comments" ON public.comment_reports FOR INSERT TO authenticated WITH CHECK (auth.uid() = reporter_id AND anonymous = false AND status = 'open');
+CREATE POLICY "Guests report comments" ON public.comment_reports FOR INSERT TO anon WITH CHECK (anonymous = true AND status = 'open');
+CREATE POLICY "Admins read comment reports" ON public.comment_reports FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "Admins update comment reports" ON public.comment_reports FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
