@@ -110,7 +110,7 @@ function NewQuestion() {
           option_a_image: paths[0]!,
           option_b_label: kind === "buyskip" ? "Skip it" : "Option B",
           option_b_image: (kind === "buyskip" ? paths[0] : paths[1])!,
-          option_c_image: kind === "multi" ? paths[2] : null,
+          option_c_image: kind === "multi" ? (paths[2] ?? null) : null,
           option_d_image: kind === "multi" ? (paths[3] ?? null) : null,
         })
         .select("id")
