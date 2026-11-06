@@ -11,7 +11,7 @@ export const Route = createFileRoute("/api/public/og/$id")({
         const fallback = Response.redirect(new URL("/og-default.jpg", request.url).toString(), 302);
         if (!UUID.test(params.id)) return fallback;
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: q } = await supabaseAdmin.from("questions").select("id, user_id").eq("id", params.id).maybeSingle();
+        const { data: q } = await supabaseAdmin.from("questions").select("id, user_id, crew_id").eq("id", params.id).maybeSingle();
         if (!q) return fallback;
         const { data: file } = await supabaseAdmin.storage.from(BUCKET).download(`${q.user_id}/${q.id}-og.jpg`);
         if (!file) return fallback;
