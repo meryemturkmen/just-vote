@@ -19,6 +19,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as QIdRouteImport } from './routes/q.$id'
 import { Route as ApiPublicJobsCleanupExpiredRouteImport } from './routes/api/public/jobs/cleanup-expired'
+import { Route as ApiPublicOgIdRouteImport } from './routes/api/public/og/$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,6 +72,11 @@ const ApiPublicJobsCleanupExpiredRoute =
     path: '/api/public/jobs/cleanup-expired',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicOgIdRoute = ApiPublicOgIdRouteImport.update({
+  id: '/api/public/og/$id',
+  path: '/api/public/og/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/q/$id': typeof QIdRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
+  '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/q/$id': typeof QIdRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
+  '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/q/$id': typeof QIdRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
+  '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/q/$id'
     | '/api/public/jobs/cleanup-expired'
+    | '/api/public/og/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -130,6 +140,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/q/$id'
     | '/api/public/jobs/cleanup-expired'
+    | '/api/public/og/$id'
   id:
     | '__root__'
     | '/'
@@ -142,6 +153,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/q/$id'
     | '/api/public/jobs/cleanup-expired'
+    | '/api/public/og/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -150,6 +162,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   QIdRoute: typeof QIdRoute
   ApiPublicJobsCleanupExpiredRoute: typeof ApiPublicJobsCleanupExpiredRoute
+  ApiPublicOgIdRoute: typeof ApiPublicOgIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicJobsCleanupExpiredRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/og/$id': {
+      id: '/api/public/og/$id'
+      path: '/api/public/og/$id'
+      fullPath: '/api/public/og/$id'
+      preLoaderRoute: typeof ApiPublicOgIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   QIdRoute: QIdRoute,
   ApiPublicJobsCleanupExpiredRoute: ApiPublicJobsCleanupExpiredRoute,
+  ApiPublicOgIdRoute: ApiPublicOgIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
