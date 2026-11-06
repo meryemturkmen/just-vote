@@ -44,7 +44,7 @@ function NewQuestion() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (!a.file || !b.file) return toast.error("Please add a photo for both options");
+    if (!a.file || !b.file) { toast.error("Please add a photo for both options"); return; }
     setBusy(true);
     try {
       const [pa, pb] = await Promise.all([upload(a.file), upload(b.file)]);

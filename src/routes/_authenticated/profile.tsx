@@ -41,7 +41,7 @@ function Profile() {
 
   async function save() {
     const { error } = await supabase.from("profiles").update({ display_name: name.trim() }).eq("id", user.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Saved!");
     qc.invalidateQueries();
   }
