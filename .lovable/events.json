@@ -24,7 +24,8 @@
             "type": "string",
             "enum": [
               "public",
-              "link"
+              "link",
+              "crew"
             ]
           },
           "duration_hours": {

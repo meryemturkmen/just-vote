@@ -13,16 +13,21 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ImprintRouteImport } from './routes/imprint'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedCrewsRouteImport } from './routes/_authenticated/crews'
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
+import { Route as JoinCodeRouteImport } from './routes/join.$code'
 import { Route as QIdRouteImport } from './routes/q.$id'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as AuthenticatedCrewsIdRouteImport } from './routes/_authenticated/crews.$id'
 import { Route as ApiPublicJobsCleanupExpiredRouteImport } from './routes/api/public/jobs/cleanup-expired'
 import { Route as ApiPublicOgIdRouteImport } from './routes/api/public/og/$id'
 
@@ -45,6 +50,11 @@ const ImprintRoute = ImprintRouteImport.update({
   path: '/imprint',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -58,6 +68,11 @@ const TermsRoute = TermsRouteImport.update({
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCrewsRoute = AuthenticatedCrewsRouteImport.update({
+  id: '/crews',
+  path: '/crews',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMyRoute = AuthenticatedMyRouteImport.update({
@@ -91,10 +106,25 @@ const AuthenticatedStatsRoute = AuthenticatedStatsRouteImport.update({
   path: '/stats',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const JoinCodeRoute = JoinCodeRouteImport.update({
+  id: '/join/$code',
+  path: '/join/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QIdRoute = QIdRouteImport.update({
   id: '/q/$id',
   path: '/q/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCrewsIdRoute = AuthenticatedCrewsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedCrewsRoute,
 } as any)
 const ApiPublicJobsCleanupExpiredRoute =
   ApiPublicJobsCleanupExpiredRouteImport.update({
@@ -112,16 +142,21 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/imprint': typeof ImprintRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/crews': typeof AuthenticatedCrewsRouteWithChildren
   '/my': typeof AuthenticatedMyRoute
   '/new': typeof AuthenticatedNewRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/stats': typeof AuthenticatedStatsRoute
+  '/join/$code': typeof JoinCodeRoute
   '/q/$id': typeof QIdRoute
+  '/u/$username': typeof UUsernameRoute
+  '/crews/$id': typeof AuthenticatedCrewsIdRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
   '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
@@ -129,16 +164,21 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/imprint': typeof ImprintRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/crews': typeof AuthenticatedCrewsRouteWithChildren
   '/my': typeof AuthenticatedMyRoute
   '/new': typeof AuthenticatedNewRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/stats': typeof AuthenticatedStatsRoute
+  '/join/$code': typeof JoinCodeRoute
   '/q/$id': typeof QIdRoute
+  '/u/$username': typeof UUsernameRoute
+  '/crews/$id': typeof AuthenticatedCrewsIdRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
   '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
@@ -148,16 +188,21 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/imprint': typeof ImprintRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/crews': typeof AuthenticatedCrewsRouteWithChildren
   '/_authenticated/my': typeof AuthenticatedMyRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
+  '/join/$code': typeof JoinCodeRoute
   '/q/$id': typeof QIdRoute
+  '/u/$username': typeof UUsernameRoute
+  '/_authenticated/crews/$id': typeof AuthenticatedCrewsIdRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
   '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
@@ -167,16 +212,21 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/imprint'
+    | '/leaderboard'
     | '/privacy'
     | '/terms'
     | '/admin'
+    | '/crews'
     | '/my'
     | '/new'
     | '/notifications'
     | '/onboarding'
     | '/profile'
     | '/stats'
+    | '/join/$code'
     | '/q/$id'
+    | '/u/$username'
+    | '/crews/$id'
     | '/api/public/jobs/cleanup-expired'
     | '/api/public/og/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -184,16 +234,21 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/imprint'
+    | '/leaderboard'
     | '/privacy'
     | '/terms'
     | '/admin'
+    | '/crews'
     | '/my'
     | '/new'
     | '/notifications'
     | '/onboarding'
     | '/profile'
     | '/stats'
+    | '/join/$code'
     | '/q/$id'
+    | '/u/$username'
+    | '/crews/$id'
     | '/api/public/jobs/cleanup-expired'
     | '/api/public/og/$id'
   id:
@@ -202,16 +257,21 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/imprint'
+    | '/leaderboard'
     | '/privacy'
     | '/terms'
     | '/_authenticated/admin'
+    | '/_authenticated/crews'
     | '/_authenticated/my'
     | '/_authenticated/new'
     | '/_authenticated/notifications'
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/_authenticated/stats'
+    | '/join/$code'
     | '/q/$id'
+    | '/u/$username'
+    | '/_authenticated/crews/$id'
     | '/api/public/jobs/cleanup-expired'
     | '/api/public/og/$id'
   fileRoutesById: FileRoutesById
@@ -221,9 +281,12 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ImprintRoute: typeof ImprintRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
+  JoinCodeRoute: typeof JoinCodeRoute
   QIdRoute: typeof QIdRoute
+  UUsernameRoute: typeof UUsernameRoute
   ApiPublicJobsCleanupExpiredRoute: typeof ApiPublicJobsCleanupExpiredRoute
   ApiPublicOgIdRoute: typeof ApiPublicOgIdRoute
 }
@@ -258,6 +321,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ImprintRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -277,6 +347,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/crews': {
+      id: '/_authenticated/crews'
+      path: '/crews'
+      fullPath: '/crews'
+      preLoaderRoute: typeof AuthenticatedCrewsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/my': {
@@ -321,12 +398,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStatsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/join/$code': {
+      id: '/join/$code'
+      path: '/join/$code'
+      fullPath: '/join/$code'
+      preLoaderRoute: typeof JoinCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/q/$id': {
       id: '/q/$id'
       path: '/q/$id'
       fullPath: '/q/$id'
       preLoaderRoute: typeof QIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/crews/$id': {
+      id: '/_authenticated/crews/$id'
+      path: '/$id'
+      fullPath: '/crews/$id'
+      preLoaderRoute: typeof AuthenticatedCrewsIdRouteImport
+      parentRoute: typeof AuthenticatedCrewsRoute
     }
     '/api/public/jobs/cleanup-expired': {
       id: '/api/public/jobs/cleanup-expired'
@@ -345,8 +443,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedCrewsRouteChildren {
+  AuthenticatedCrewsIdRoute: typeof AuthenticatedCrewsIdRoute
+}
+
+const AuthenticatedCrewsRouteChildren: AuthenticatedCrewsRouteChildren = {
+  AuthenticatedCrewsIdRoute: AuthenticatedCrewsIdRoute,
+}
+
+const AuthenticatedCrewsRouteWithChildren =
+  AuthenticatedCrewsRoute._addFileChildren(AuthenticatedCrewsRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedCrewsRoute: typeof AuthenticatedCrewsRouteWithChildren
   AuthenticatedMyRoute: typeof AuthenticatedMyRoute
   AuthenticatedNewRoute: typeof AuthenticatedNewRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
@@ -357,6 +467,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedCrewsRoute: AuthenticatedCrewsRouteWithChildren,
   AuthenticatedMyRoute: AuthenticatedMyRoute,
   AuthenticatedNewRoute: AuthenticatedNewRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
@@ -373,9 +484,12 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ImprintRoute: ImprintRoute,
+  LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
+  JoinCodeRoute: JoinCodeRoute,
   QIdRoute: QIdRoute,
+  UUsernameRoute: UUsernameRoute,
   ApiPublicJobsCleanupExpiredRoute: ApiPublicJobsCleanupExpiredRoute,
   ApiPublicOgIdRoute: ApiPublicOgIdRoute,
 }

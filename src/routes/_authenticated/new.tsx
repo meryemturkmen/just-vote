@@ -16,6 +16,8 @@ import { hasProfanity, PROFANITY_MSG, friendlyDbError } from "@/lib/profanity";
 import { CATEGORIES, isCategory } from "@/lib/categories";
 import { compressImage } from "@/lib/compress";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { fetchMyCrews } from "@/lib/social";
 
 export const Route = createFileRoute("/_authenticated/new")({
   head: () => ({
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/new")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { crew?: string } => (typeof s["crew"] === "string" ? { crew: s["crew"] } : {}),
   component: NewQuestion,
 });
 
@@ -49,6 +52,10 @@ function NewQuestion() {
   const [occasion, setOccasion] = useState("");
   const [budget, setBudget] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const search = Route.useSearch();
+  const [crewId, setCrewId] = useState<string | null>(search.crew ?? null);
+  const crews = useQuery({ queryKey: ["crews"], queryFn: fetchMyCrews });
+  const visibility = crewId ? "crew" : isPublic ? "public" : "link";
   const [duration, setDuration] = useState<number>(24);
   const [busy, setBusy] = useState(false);
   const uploadPhotos = useServerFn(uploadQuestionPhotos);
@@ -88,7 +95,8 @@ function NewQuestion() {
           category,
           occasion: occasion.trim() || null,
           budget: budget.trim() || null,
-          visibility: isPublic ? "public" : "link",
+          visibility,
+          crew_id: crewId,
           duration_hours: duration,
           option_a_label: "Option A",
           option_a_image: pa,
@@ -105,7 +113,7 @@ function NewQuestion() {
       } catch (e) {
         console.warn("Link preview image failed", e);
       }
-      window.__lovableEvents?.track?.("project.question_created", { category, visibility: isPublic ? "public" : "link", duration_hours: duration });
+      window.__lovableEvents?.track?.("project.question_created", { category, visibility, duration_hours: duration });
       qc.invalidateQueries({ queryKey: ["questions"] });
       setCreated({ id: data.id, title: title.trim() || "Which one should I buy?" });
     } catch (err) {
@@ -127,7 +135,7 @@ function NewQuestion() {
           </span>
           <h1 className="mt-6 text-2xl font-bold">It's live! 🎉</h1>
           <p className="mt-2 max-w-xs text-sm text-muted-foreground">
-            {isPublic ? "Your friends are already voting. Probably. Send it to make sure." : "Link only. Drop it in the group chat 👀"}
+            {crewId ? "Only your crew can see this one. Tell them it's up 🫂" : isPublic ? "Your friends are already voting. Probably. Send it to make sure." : "Link only. Drop it in the group chat 👀"}
           </p>
           <Button variant="hero" className="mt-8 h-12 w-full" onClick={() => shareQuestion(created.id, created.title, "confirm")}>
             <Share2 /> Share link
@@ -188,7 +196,18 @@ function NewQuestion() {
           </div>
         </Section>
 
-        <label className="flex items-center justify-between gap-4 rounded-2xl bg-card p-4 brut">
+        {!!crews.data?.length && (
+          <Section label="Who sees it?">
+            <div className="flex flex-wrap gap-2">
+              <Chip active={!crewId} onClick={() => setCrewId(null)}>🌍 Everyone</Chip>
+              {crews.data.map((c) => (
+                <Chip key={c.id} active={crewId === c.id} onClick={() => setCrewId(c.id)}>{c.emoji} {c.name}</Chip>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {!crewId && <label className="flex items-center justify-between gap-4 rounded-2xl bg-card p-4 brut">
           <div>
             <p className="text-sm font-semibold">{isPublic ? "Show in public feed" : "Link only"}</p>
             <p className="text-xs text-muted-foreground">
@@ -196,7 +215,7 @@ function NewQuestion() {
             </p>
           </div>
           <Switch checked={isPublic} onCheckedChange={setIsPublic} aria-label="Show in public feed" />
-        </label>
+        </label>}
 
         <Button type="submit" variant="hero" disabled={busy} className="h-12 w-full">
           {busy ? "Posting…" : "Let them judge"}
