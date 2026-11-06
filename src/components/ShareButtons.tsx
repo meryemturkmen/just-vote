@@ -4,12 +4,15 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { displayTitle, shareQuestion, type Question } from "@/lib/questions";
 import { shareStoryCard } from "@/lib/story-card";
+import { logShareEvent } from "@/lib/share-events";
 
 export function ShareButtons({ q }: { q: Question }) {
   const [busy, setBusy] = useState(false);
   async function story() {
     setBusy(true);
     try {
+      logShareEvent("share_click", q.id, "story");
+      window.__lovableEvents?.track?.("project.share_clicked", { channel: "story" });
       const r = await shareStoryCard(q);
       if (r === "downloaded") toast.success("Story card saved. Post it, bestie 📲");
     } catch (e) {

@@ -64,6 +64,13 @@
       "when": 1793985519426,
       "tag": "0008_admin_update_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793985928107,
+      "tag": "0009_analytics_counters",
+      "breakpoints": true
     }
   ]
 }

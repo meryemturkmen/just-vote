@@ -17,6 +17,7 @@ import {
 } from "@/lib/questions";
 import { myShare, verdictLine } from "@/lib/copy";
 import { cn } from "@/lib/utils";
+import { logShareEvent } from "@/lib/share-events";
 
 const SITE = "https://just-vote.lovable.app";
 
@@ -51,6 +52,14 @@ export const Route = createFileRoute("/q/$id")({
 function Detail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
+  useEffect(() => {
+    const u = new URL(window.location.href);
+    if (u.searchParams.get("s") !== "1") return;
+    logShareEvent("link_open", id, "direct");
+    window.__lovableEvents?.track?.("project.shared_link_opened", {});
+    u.searchParams.delete("s");
+    window.history.replaceState(window.history.state, "", u.pathname + u.search + u.hash);
+  }, [id]);
   const { data: q, isLoading } = useQuery({ queryKey: ["questions", "one", id], queryFn: () => fetchQuestion(id) });
   const vote = useMutation({
     mutationFn: (c: "a" | "b") => castVote(id, c),

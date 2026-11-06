@@ -143,7 +143,7 @@ export async function renderStoryCard(q: Question): Promise<Blob> {
 export async function shareStoryCard(q: Question) {
   const blob = await renderStoryCard(q);
   const file = new File([blob], "just-vote-story.png", { type: "image/png" });
-  const url = `${window.location.origin}/q/${q.id}`;
+  const url = `${window.location.origin}/q/${q.id}?s=1`;
   if (navigator.canShare?.({ files: [file] })) {
     try {
       await navigator.share({ files: [file], title: "Just Vote", text: `Help me pick 👉 ${url}` });

@@ -105,6 +105,7 @@ function NewQuestion() {
       } catch (e) {
         console.warn("Link preview image failed", e);
       }
+      window.__lovableEvents?.track?.("project.question_created", { category, visibility: isPublic ? "public" : "link", duration_hours: duration });
       qc.invalidateQueries({ queryKey: ["questions"] });
       setCreated({ id: data.id, title: title.trim() || "Which one should I buy?" });
     } catch (err) {
@@ -128,7 +129,7 @@ function NewQuestion() {
           <p className="mt-2 max-w-xs text-sm text-muted-foreground">
             {isPublic ? "Your friends are already voting. Probably. Send it to make sure." : "Link only. Drop it in the group chat 👀"}
           </p>
-          <Button variant="hero" className="mt-8 h-12 w-full" onClick={() => shareQuestion(created.id, created.title)}>
+          <Button variant="hero" className="mt-8 h-12 w-full" onClick={() => shareQuestion(created.id, created.title, "confirm")}>
             <Share2 /> Share link
           </Button>
           <Button asChild variant="soft" className="mt-3 h-12 w-full">
