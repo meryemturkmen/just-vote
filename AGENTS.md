@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Data reads/writes go through the browser client in src/lib/questions.ts with React Query; question photos live in a private bucket and are shown via signed URLs (workspace blocks public buckets).
