@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ImprintRouteImport } from './routes/imprint'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -23,6 +24,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as QIdRouteImport } from './routes/q.$id'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as ApiPublicJobsCleanupExpiredRouteImport } from './routes/api/public/jobs/cleanup-expired'
 import { Route as ApiPublicOgIdRouteImport } from './routes/api/public/og/$id'
 
@@ -43,6 +45,11 @@ const AuthRoute = AuthRouteImport.update({
 const ImprintRoute = ImprintRouteImport.update({
   id: '/imprint',
   path: '/imprint',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -96,6 +103,11 @@ const QIdRoute = QIdRouteImport.update({
   path: '/q/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicJobsCleanupExpiredRoute =
   ApiPublicJobsCleanupExpiredRouteImport.update({
     id: '/api/public/jobs/cleanup-expired',
@@ -112,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/imprint': typeof ImprintRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -122,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/q/$id': typeof QIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
   '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
@@ -129,6 +143,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/imprint': typeof ImprintRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -139,6 +154,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/stats': typeof AuthenticatedStatsRoute
   '/q/$id': typeof QIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
   '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
@@ -148,6 +164,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/imprint': typeof ImprintRoute
+  '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -158,6 +175,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/stats': typeof AuthenticatedStatsRoute
   '/q/$id': typeof QIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/api/public/jobs/cleanup-expired': typeof ApiPublicJobsCleanupExpiredRoute
   '/api/public/og/$id': typeof ApiPublicOgIdRoute
 }
@@ -167,6 +185,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/imprint'
+    | '/leaderboard'
     | '/privacy'
     | '/terms'
     | '/admin'
@@ -177,6 +196,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/stats'
     | '/q/$id'
+    | '/u/$username'
     | '/api/public/jobs/cleanup-expired'
     | '/api/public/og/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -184,6 +204,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/imprint'
+    | '/leaderboard'
     | '/privacy'
     | '/terms'
     | '/admin'
@@ -194,6 +215,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/stats'
     | '/q/$id'
+    | '/u/$username'
     | '/api/public/jobs/cleanup-expired'
     | '/api/public/og/$id'
   id:
@@ -202,6 +224,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/imprint'
+    | '/leaderboard'
     | '/privacy'
     | '/terms'
     | '/_authenticated/admin'
@@ -212,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/stats'
     | '/q/$id'
+    | '/u/$username'
     | '/api/public/jobs/cleanup-expired'
     | '/api/public/og/$id'
   fileRoutesById: FileRoutesById
@@ -221,9 +245,11 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ImprintRoute: typeof ImprintRoute
+  LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
   TermsRoute: typeof TermsRoute
   QIdRoute: typeof QIdRoute
+  UUsernameRoute: typeof UUsernameRoute
   ApiPublicJobsCleanupExpiredRoute: typeof ApiPublicJobsCleanupExpiredRoute
   ApiPublicOgIdRoute: typeof ApiPublicOgIdRoute
 }
@@ -256,6 +282,13 @@ declare module '@tanstack/react-router' {
       path: '/imprint'
       fullPath: '/imprint'
       preLoaderRoute: typeof ImprintRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -328,6 +361,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/jobs/cleanup-expired': {
       id: '/api/public/jobs/cleanup-expired'
       path: '/api/public/jobs/cleanup-expired'
@@ -373,9 +413,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ImprintRoute: ImprintRoute,
+  LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
   TermsRoute: TermsRoute,
   QIdRoute: QIdRoute,
+  UUsernameRoute: UUsernameRoute,
   ApiPublicJobsCleanupExpiredRoute: ApiPublicJobsCleanupExpiredRoute,
   ApiPublicOgIdRoute: ApiPublicOgIdRoute,
 }

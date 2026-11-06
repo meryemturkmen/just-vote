@@ -116,6 +116,17 @@ export async function fetchMine(userId: string) {
   return hydrate(data as unknown as Row[]);
 }
 
+export async function fetchCrewQuestions(crewId: string) {
+  const { data, error } = await supabase
+    .from("questions")
+    .select(SELECT)
+    .eq("crew_id", crewId)
+    .order("created_at", { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return hydrate(data as unknown as Row[]);
+}
+
 export async function fetchQuestion(id: string) {
   const { data, error } = await supabase.from("questions").select(SELECT).eq("id", id).maybeSingle();
   if (error) throw error;
