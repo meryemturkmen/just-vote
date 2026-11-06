@@ -9,7 +9,10 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Chip } from "@/components/CategoryChips";
 import { supabase } from "@/integrations/supabase/client";
-import { BUCKET, shareQuestion } from "@/lib/questions";
+import { shareQuestion } from "@/lib/questions";
+import { useServerFn } from "@tanstack/react-start";
+import { uploadQuestionPhotos, uploadPreviewImage } from "@/lib/moderation.functions";
+import { hasProfanity, PROFANITY_MSG, friendlyDbError } from "@/lib/profanity";
 import { CATEGORIES, isCategory } from "@/lib/categories";
 import { compressImage } from "@/lib/compress";
 import { cn } from "@/lib/utils";
@@ -48,22 +51,34 @@ function NewQuestion() {
   const [isPublic, setIsPublic] = useState(true);
   const [duration, setDuration] = useState<number>(24);
   const [busy, setBusy] = useState(false);
+  const uploadPhotos = useServerFn(uploadQuestionPhotos);
+  const uploadPreview = useServerFn(uploadPreviewImage);
   const [created, setCreated] = useState<{ id: string; title: string } | null>(null);
 
-  async function upload(blob: Blob) {
-    const path = `${user.id}/${crypto.randomUUID()}.jpg`;
-    const { error } = await supabase.storage.from(BUCKET).upload(path, blob, { contentType: blob.type || "image/jpeg" });
-    if (error) throw error;
-    return path;
+  async function toB64(blob: Blob) {
+    const buf = new Uint8Array(await blob.arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+    return btoa(bin);
   }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!a || !b) { toast.error("Need both pics, bestie"); return; }
     if (!isCategory(category)) { toast.error("Pick a category first"); return; }
+    if ([title, occasion, budget].some(hasProfanity)) { toast.error(PROFANITY_MSG); return; }
     setBusy(true);
     try {
-      const [pa, pb] = await Promise.all([upload(a.blob), upload(b.blob)]);
+      const up = await uploadPhotos({ data: { a: await toB64(a.blob), b: await toB64(b.blob) } });
+      if (!up.ok) {
+        toast.error(
+          up.error === "limit" ? "That's 10 questions today. Chill till tomorrow 😮‍💨"
+          : up.error === "blocked" ? "Nope 🚫 Those pics look NSFW or violent. Products only, please."
+          : "Our safety check is napping. Try again in a sec.",
+        );
+        return;
+      }
+      const pa = up.a, pb = up.b;
       const { data, error } = await supabase
         .from("questions")
         .insert({
@@ -81,11 +96,11 @@ function NewQuestion() {
         })
         .select("id")
         .single();
-      if (error) throw error;
+      if (error) throw new Error(friendlyDbError(error.message));
       try {
         const { renderPreviewCard } = await import("@/lib/story-card");
         const og = await renderPreviewCard(a.blob, b.blob);
-        await supabase.storage.from(BUCKET).upload(`${user.id}/${data.id}-og.jpg`, og, { contentType: "image/jpeg", upsert: true });
+        await uploadPreview({ data: { questionId: data.id, og: await toB64(og) } });
       } catch (e) {
         console.warn("Link preview image failed", e);
       }
