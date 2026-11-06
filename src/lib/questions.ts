@@ -6,6 +6,7 @@ export const BUCKET = "question-images";
 export type Question = {
   id: string;
   user_id: string;
+  hidden: boolean;
   title: string;
   category: string;
   option_a_label: string;
