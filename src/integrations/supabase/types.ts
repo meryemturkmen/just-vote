@@ -40,37 +40,52 @@ export type Database = {
       }
       questions: {
         Row: {
+          budget: string | null
           category: string
           created_at: string
+          duration_hours: number
+          ends_at: string | null
           id: string
+          occasion: string | null
           option_a_image: string
           option_a_label: string
           option_b_image: string
           option_b_label: string
           title: string
           user_id: string
+          visibility: string
         }
         Insert: {
+          budget?: string | null
           category?: string
           created_at?: string
+          duration_hours?: number
+          ends_at?: string | null
           id?: string
+          occasion?: string | null
           option_a_image: string
-          option_a_label: string
+          option_a_label?: string
           option_b_image: string
-          option_b_label: string
-          title: string
+          option_b_label?: string
+          title?: string
           user_id: string
+          visibility?: string
         }
         Update: {
+          budget?: string | null
           category?: string
           created_at?: string
+          duration_hours?: number
+          ends_at?: string | null
           id?: string
+          occasion?: string | null
           option_a_image?: string
           option_a_label?: string
           option_b_image?: string
           option_b_label?: string
           title?: string
           user_id?: string
+          visibility?: string
         }
         Relationships: [
           {

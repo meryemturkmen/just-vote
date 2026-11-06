@@ -15,6 +15,13 @@
       "when": 1793975442447,
       "tag": "0001_categories_interests_anon_votes",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793975575722,
+      "tag": "0002_question_options",
+      "breakpoints": true
     }
   ]
 }
