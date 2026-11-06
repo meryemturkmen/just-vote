@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
@@ -28,16 +28,18 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [age, setAge] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "up") {
+        if (!age) { toast.error("You need to be 16+ to join. Rules are rules 🙅"); return; }
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin, data: { full_name: name } },
+          options: { emailRedirectTo: window.location.origin, data: { full_name: name, age_confirmed_16: true, age_confirmed_at: new Date().toISOString() } },
         });
         if (error) throw error;
         if (!data.session) {
@@ -57,6 +59,7 @@ function AuthPage() {
   }
 
   async function google() {
+    if (mode === "up" && !age) { toast.error("Tick the 16+ box first 🙅"); return; }
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
     if (r.error) { toast.error(r.error.message); return; }
     if (r.redirected) return;
@@ -85,6 +88,12 @@ function AuthPage() {
         )}
         <Input className="h-12 rounded-xl bg-card" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <Input className="h-12 rounded-xl bg-card" type="password" placeholder="Password" minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} required />
+        {mode === "up" && (
+          <label className="flex items-start gap-3 rounded-xl bg-card p-3 text-sm font-medium brut-sm">
+            <input type="checkbox" checked={age} onChange={(e) => setAge(e.target.checked)} required className="mt-0.5 size-5 shrink-0 accent-primary" />
+            <span>I'm at least 16 years old and accept the <Link to="/terms" className="font-bold underline">Terms</Link> and <Link to="/privacy" className="font-bold underline">Privacy Policy</Link>.</span>
+          </label>
+        )}
         <Button type="submit" variant="hero" disabled={busy} className="h-12 w-full">
           {mode === "in" ? "Sign in" : "Create account"}
         </Button>

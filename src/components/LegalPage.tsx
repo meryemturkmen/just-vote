@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
 
@@ -12,8 +13,7 @@ export function LegalPage({ title, updated, children }: { title: string; updated
   );
 }
 
-/** Small legal links row used in the footer, profile and consent banner. */
-import { Link } from "@tanstack/react-router";
+/** Small legal links row used in the footer and profile. */
 export function LegalLinks({ className = "" }: { className?: string }) {
   return (
     <nav className={`flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs font-bold ${className}`} aria-label="Legal">

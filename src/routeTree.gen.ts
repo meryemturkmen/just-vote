@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ImprintRouteImport } from './routes/imprint'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedMyRouteImport } from './routes/_authenticated/my'
 import { Route as AuthenticatedNewRouteImport } from './routes/_authenticated/new'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
@@ -33,6 +36,21 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ImprintRoute = ImprintRouteImport.update({
+  id: '/imprint',
+  path: '/imprint',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedMyRoute = AuthenticatedMyRouteImport.update({
@@ -81,6 +99,9 @@ const ApiPublicOgIdRoute = ApiPublicOgIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/imprint': typeof ImprintRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/my': typeof AuthenticatedMyRoute
   '/new': typeof AuthenticatedNewRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -93,6 +114,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/imprint': typeof ImprintRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/my': typeof AuthenticatedMyRoute
   '/new': typeof AuthenticatedNewRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
@@ -107,6 +131,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/imprint': typeof ImprintRoute
+  '/privacy': typeof PrivacyRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/my': typeof AuthenticatedMyRoute
   '/_authenticated/new': typeof AuthenticatedNewRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
@@ -121,6 +148,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/imprint'
+    | '/privacy'
+    | '/terms'
     | '/my'
     | '/new'
     | '/notifications'
@@ -133,6 +163,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/imprint'
+    | '/privacy'
+    | '/terms'
     | '/my'
     | '/new'
     | '/notifications'
@@ -146,6 +179,9 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/imprint'
+    | '/privacy'
+    | '/terms'
     | '/_authenticated/my'
     | '/_authenticated/new'
     | '/_authenticated/notifications'
@@ -160,6 +196,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ImprintRoute: typeof ImprintRoute
+  PrivacyRoute: typeof PrivacyRoute
+  TermsRoute: typeof TermsRoute
   QIdRoute: typeof QIdRoute
   ApiPublicJobsCleanupExpiredRoute: typeof ApiPublicJobsCleanupExpiredRoute
   ApiPublicOgIdRoute: typeof ApiPublicOgIdRoute
@@ -186,6 +225,27 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/imprint': {
+      id: '/imprint'
+      path: '/imprint'
+      fullPath: '/imprint'
+      preLoaderRoute: typeof ImprintRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/my': {
@@ -270,6 +330,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ImprintRoute: ImprintRoute,
+  PrivacyRoute: PrivacyRoute,
+  TermsRoute: TermsRoute,
   QIdRoute: QIdRoute,
   ApiPublicJobsCleanupExpiredRoute: ApiPublicJobsCleanupExpiredRoute,
   ApiPublicOgIdRoute: ApiPublicOgIdRoute,

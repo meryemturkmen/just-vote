@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { useUser } from "@/hooks/use-session";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
+import { LegalLinks } from "@/components/LegalPage";
 
 export function AppShell({ children, title, bleed }: { children: ReactNode; title?: string; bleed?: boolean }) {
   const path = useLocation({ select: (l) => l.pathname });
@@ -19,6 +20,12 @@ export function AppShell({ children, title, bleed }: { children: ReactNode; titl
       <div key={path} className="animate-page">
         {title && <h1 className="px-4 pt-6 text-[2rem] leading-[0.95] min-[400px]:px-5 min-[400px]:text-4xl">{title}</h1>}
         <main className={bleed ? "" : "px-4 pt-5 min-[400px]:px-5"}>{children}</main>
+        {!bleed && (
+          <footer className="mt-10 px-4 text-muted-foreground">
+            <LegalLinks />
+            <p className="mt-2 text-center text-[11px]">© {new Date().getFullYear()} Just Vote · 16+</p>
+          </footer>
+        )}
       </div>
       <BottomNav />
     </div>
