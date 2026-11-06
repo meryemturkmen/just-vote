@@ -8,7 +8,7 @@ import { Logo } from "@/components/Logo";
 
 export function AppShell({ children, title, bleed }: { children: ReactNode; title?: string; bleed?: boolean }) {
   return (
-    <div className="mx-auto min-h-[100dvh] max-w-md bg-background pb-32">
+    <div className={bleed ? "mx-auto h-[100dvh] max-w-md overflow-hidden bg-background" : "mx-auto min-h-[100dvh] max-w-md bg-background pb-32"}>
       <header className="sticky top-0 z-20 border-b-2 bg-background px-5 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" aria-label="Just Vote home"><Logo /></Link>

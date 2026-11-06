@@ -9,7 +9,6 @@ import { FEED_PAGE, fetchFeedPage, type FeedSort } from "@/lib/questions";
 import { fetchInterests } from "@/lib/profile";
 import { CATEGORIES } from "@/lib/categories";
 import { useUser } from "@/hooks/use-session";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -53,65 +52,74 @@ function Feed() {
     if (!el) return;
     const io = new IntersectionObserver((e) => {
       if (e[0]?.isIntersecting && feed.hasNextPage && !feed.isFetchingNextPage) feed.fetchNextPage();
-    }, { rootMargin: "600px" });
+    }, { rootMargin: "1200px" });
     io.observe(el);
     return () => io.disconnect();
   }, [feed.hasNextPage, feed.isFetchingNextPage, feed.fetchNextPage]);
 
   return (
-    <AppShell title="Help someone decide">
-      <div className="sticky top-[60px] z-10 -mx-5 bg-background/90 px-5 pb-3 pt-1 backdrop-blur">
-        <div className="-mx-5 flex gap-2 overflow-x-auto px-5 pb-2 [scrollbar-width:none]">
-          <Chip active={category === null} onClick={() => setCategory(null)}>{myInterests ? "For you" : "All"}</Chip>
-          {CATEGORIES.map((c) => (
-            <Chip key={c} active={category === c} onClick={() => setCategory(c)}>{c}</Chip>
-          ))}
-        </div>
-        <div className="inline-flex rounded-full bg-muted p-1 text-sm">
-          {(["new", "ending"] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => setSort(s)}
-              className={cn("rounded-full px-4 py-1.5 font-medium transition", sort === s ? "bg-card text-foreground shadow-card" : "text-muted-foreground")}
-            >
-              {s === "new" ? "New" : "Ending soon"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {(feed.isLoading || !ready) && (
-        <div className="mt-2 space-y-4">{[0, 1].map((i) => <div key={i} className="h-80 animate-pulse rounded-3xl bg-muted" />)}</div>
-      )}
-
-      {feed.isSuccess && items.length === 0 && (
-        <div className="mt-2 rounded-3xl bg-primary-soft p-8 text-center">
-          <p className="font-display text-lg font-semibold">You're all caught up ✨</p>
-          <p className="mt-1 text-sm text-muted-foreground">No open questions here right now. Got one of your own?</p>
-          <Button asChild variant="hero" className="mt-5 h-11 px-6">
-            <Link to="/new">Ask a question</Link>
-          </Button>
-        </div>
-      )}
-
-      <div className="mt-2 space-y-5">
-        {items.map((q, i) => (
-          <div key={q.id}>
-            {i === dividerIndex && (
-              <div className="mb-5 flex items-center gap-3 pt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                <div className="h-px flex-1 bg-border" /> More from other categories <div className="h-px flex-1 bg-border" />
-              </div>
-            )}
-            <QuestionCard q={q} />
+    <AppShell bleed>
+      <div className="flex h-[calc(100dvh-70px)] flex-col">
+        <div className="border-b-2 bg-background px-4 py-2.5">
+          <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 pt-0.5">
+            <SortToggle sort={sort} setSort={setSort} />
+            <Chip active={category === null} onClick={() => setCategory(null)}>{myInterests ? "For you ✨" : "All"}</Chip>
+            {CATEGORIES.map((c) => (
+              <Chip key={c} active={category === c} onClick={() => setCategory(c)}>{c}</Chip>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <div className="no-scrollbar relative min-h-0 flex-1 snap-y snap-mandatory overflow-y-scroll pb-[96px]">
+          {(feed.isLoading || !ready) && (
+            <div className="flex h-full items-center justify-center">
+              <p className="animate-wiggle rounded-lg bg-yellow px-4 py-2 font-display text-xl font-extrabold brut">Loading the drama…</p>
+            </div>
+          )}
+
+          {feed.isSuccess && items.length === 0 && (
+            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
+              <p className="tilt-l rounded-lg bg-lime px-4 py-2 font-display text-3xl font-extrabold brut">All caught up 🫡</p>
+              <p className="font-medium">No open questions here rn. Got your own dilemma?</p>
+              <Button asChild variant="hero" size="xl"><Link to="/new">Ask the internet</Link></Button>
+            </div>
+          )}
+
+          {items.map((q, i) => (
+            <div key={q.id} className="contents">
+              {i === dividerIndex && (
+                <section className="flex h-full snap-start snap-always flex-col items-center justify-center gap-3 px-8 text-center">
+                  <p className="tilt-r rounded-lg bg-primary px-4 py-3 font-display text-3xl font-extrabold leading-tight brut">More from other categories</p>
+                  <p className="font-medium">You've seen your faves. Time to judge other stuff 👇</p>
+                </section>
+              )}
+              <QuestionCard q={q} />
+            </div>
+          ))}
+
+          {feed.isSuccess && items.length > 0 && !feed.hasNextPage && (
+            <section className="flex h-full snap-start flex-col items-center justify-center gap-4 px-8 text-center">
+              <p className="tilt-l rounded-lg bg-lime px-4 py-3 font-display text-3xl font-extrabold brut">That's all, folks 🎉</p>
+              <p className="font-medium">You voted on everything. Touch grass or ask your own.</p>
+              <Button asChild variant="hero" size="xl"><Link to="/new">Ask a question</Link></Button>
+            </section>
+          )}
+          <div ref={sentinel} className="h-px" />
+        </div>
       </div>
-      <div ref={sentinel} className="h-10" />
-      {feed.isFetchingNextPage && <div className="h-40 animate-pulse rounded-3xl bg-muted" />}
-      {feed.isSuccess && items.length > 0 && !feed.hasNextPage && (
-        <p className="py-6 text-center text-xs text-muted-foreground">That's everything for now 🎉</p>
-      )}
     </AppShell>
+  );
+}
+
+function SortToggle({ sort, setSort }: { sort: FeedSort; setSort: (s: FeedSort) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => setSort(sort === "new" ? "ending" : "new")}
+      className="shrink-0 rounded-full bg-yellow px-4 py-2 text-sm font-extrabold brut-sm press"
+      aria-label={`Sort: ${sort === "new" ? "New" : "Ending soon"}`}
+    >
+      {sort === "new" ? "🆕 New" : "⏰ Ending soon"}
+    </button>
   );
 }
