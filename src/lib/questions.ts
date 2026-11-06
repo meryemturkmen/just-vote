@@ -61,6 +61,7 @@ async function hydrate(rows: Row[]): Promise<Question[]> {
   return rows.map((r) => ({
     id: r.id,
     user_id: r.user_id,
+    hidden: r.hidden,
     title: r.title,
     category: r.category,
     option_a_label: r.option_a_label,

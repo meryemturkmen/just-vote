@@ -78,6 +78,7 @@ function NewQuestion() {
         );
         return;
       }
+      if (!up.a || !up.b) throw new Error("Upload failed");
       const pa = up.a, pb = up.b;
       const { data, error } = await supabase
         .from("questions")

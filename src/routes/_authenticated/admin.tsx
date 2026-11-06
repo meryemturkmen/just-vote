@@ -90,7 +90,7 @@ function ReportCard({ group, onChange }: { group: { id: string; reports: Report[
   const del = useServerFn(adminDeleteQuestion);
   const [busy, setBusy] = useState(false);
   const { q, reports } = group;
-  const hidden = (q as { hidden?: boolean } | null)?.hidden ?? false;
+  const hidden = q?.hidden ?? false;
 
   async function run(fn: () => Promise<unknown>, msg: string) {
     setBusy(true);
@@ -98,8 +98,10 @@ function ReportCard({ group, onChange }: { group: { id: string; reports: Report[
     catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
   }
-  const markReports = (status: string) =>
-    supabase.from("reports").update({ status, reviewed_at: new Date().toISOString() }).eq("question_id", group.id).eq("status", "open").then(({ error }) => { if (error) throw error; });
+  async function markReports(status: string) {
+    const { error } = await supabase.from("reports").update({ status, reviewed_at: new Date().toISOString() }).eq("question_id", group.id).eq("status", "open");
+    if (error) throw error;
+  }
 
   return (
     <article className="rounded-2xl bg-card p-4 brut">
