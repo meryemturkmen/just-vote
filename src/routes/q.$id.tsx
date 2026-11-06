@@ -1,19 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { QuestionSkeleton } from "@/components/Skeleton";
 import { AppShell } from "@/components/AppShell";
-import { CategoryTag, Chip, Sticker } from "@/components/CategoryChips";
+import { CategoryTag, Sticker } from "@/components/CategoryChips";
 import { AnimatedBar } from "@/components/AnimatedBar";
 import { ShareButtons } from "@/components/ShareButtons";
 import { ReportButton } from "@/components/ReportButton";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { CommentSection } from "@/components/CommentSection";
 import {
-  COMMENT_MAX, FEEDBACK_TAGS, castVote, decisionLabel, displayTitle, fetchFeedback, fetchQuestion,
-  isClosed, myVoterId, percent, sendFeedback, timeLeft, type Question,
+  castVote, decisionLabel, displayTitle, fetchQuestion, isClosed, percent, timeLeft, type Question,
 } from "@/lib/questions";
 import { myShare, verdictLine } from "@/lib/copy";
 import { cn } from "@/lib/utils";
@@ -84,9 +82,12 @@ function Detail() {
           <Context q={q} />
           <Photos q={q} onVote={(c) => vote.mutate(c)} pending={vote.isPending} />
           {(q.myVote || isClosed(q)) && <Results q={q} />}
-          {q.myVote && <FeedbackForm questionId={q.id} />}
           <div className="mt-6"><ShareButtons q={q} /></div>
-          <FeedbackList questionId={q.id} />
+          {q.myVote ? (
+            <CommentSection q={q} />
+          ) : (
+            <p className="mt-8 rounded-xl bg-card px-4 py-3 text-sm font-bold brut-sm tilt-r">💬 {q.commentCount} {q.commentCount === 1 ? "comment" : "comments"} hiding here. Vote to unlock the tea 🔒</p>
+          )}
         </>
       )}
     </AppShell>
@@ -176,75 +177,6 @@ function Results({ q }: { q: Question }) {
         <AnimatedBar label="A" pct={pa} highlight={q.myVote === "a"} color="bg-yellow" />
         <AnimatedBar label="B" pct={pb} highlight={q.myVote === "b"} color="bg-lime" />
       </div>
-    </section>
-  );
-}
-
-function FeedbackForm({ questionId }: { questionId: string }) {
-  const qc = useQueryClient();
-  const [tags, setTags] = useState<string[]>([]);
-  const [comment, setComment] = useState("");
-  const [voterId, setVoterId] = useState<string | undefined>();
-  useEffect(() => { myVoterId().then((v) => setVoterId(v.id)); }, []);
-  const { data: list } = useQuery({ queryKey: ["feedback", questionId], queryFn: () => fetchFeedback(questionId) });
-  const send = useMutation({
-    mutationFn: () => sendFeedback(questionId, tags, comment),
-    onSuccess: () => { toast.success("Noted. You're a real one 💅"); qc.invalidateQueries({ queryKey: ["feedback", questionId] }); },
-    onError: (e: Error) => toast.error(e.message),
-  });
-  if (!voterId || list?.some((f) => f.voter_id === voterId)) return null;
-
-  return (
-    <section className="mt-6 rounded-2xl bg-lime p-5 brut">
-      <p className="font-display text-xl font-extrabold">Why tho? <span className="text-sm font-bold">(optional)</span></p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {FEEDBACK_TAGS.map((t) => (
-          <Chip key={t} active={tags.includes(t)} onClick={() => setTags(tags.includes(t) ? tags.filter((x) => x !== t) : [...tags, t])}>{t}</Chip>
-        ))}
-      </div>
-      <Textarea
-        className="mt-3 min-h-20 rounded-xl bg-card"
-        placeholder="Spill it. 140 chars max."
-        maxLength={COMMENT_MAX}
-        value={comment}
-        onChange={(e) => setComment(e.target.value)}
-      />
-      <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs font-bold">{comment.length}/{COMMENT_MAX}</span>
-        <Button variant="hero" className="px-6" disabled={send.isPending || (!tags.length && !comment.trim())} onClick={() => send.mutate()}>
-          Send it
-        </Button>
-      </div>
-    </section>
-  );
-}
-
-function FeedbackList({ questionId }: { questionId: string }) {
-  const { data } = useQuery({ queryKey: ["feedback", questionId], queryFn: () => fetchFeedback(questionId) });
-  if (!data?.length) return null;
-  const counts = FEEDBACK_TAGS.map((t) => [t, data.filter((f) => f.tags.includes(t)).length] as const)
-    .filter(([, n]) => n > 0)
-    .sort((a, b) => b[1] - a[1]);
-  const comments = data.filter((f) => f.comment);
-  return (
-    <section className="mt-10">
-      <h2 className="text-2xl">The comments section 🍿</h2>
-      {counts.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {counts.map(([t, n], i) => (
-            <span key={t} className={cn("rounded-md bg-card px-3 py-1.5 text-sm font-extrabold brut-sm", i % 2 ? "tilt-r" : "tilt-l")}>
-              {t} <span className="rounded bg-primary px-1.5">{n}</span>
-            </span>
-          ))}
-        </div>
-      )}
-      <ul className="mt-5 space-y-3">
-        {comments.map((f, i) => (
-          <li key={f.id} className={cn("rounded-xl bg-card px-4 py-3 text-sm font-medium brut-sm", i % 2 ? "rotate-[0.6deg]" : "rotate-[-0.6deg]")}>
-            “{f.comment}”
-          </li>
-        ))}
-      </ul>
     </section>
   );
 }
