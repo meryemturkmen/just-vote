@@ -14,13 +14,233 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      notifications: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          kind: string
+          question_id: string
+          read: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind: string
+          question_id: string
+          read?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          question_id?: string
+          read?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          interests: string[]
+          onboarded: boolean
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id: string
+          interests?: string[]
+          onboarded?: boolean
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          interests?: string[]
+          onboarded?: boolean
+        }
+        Relationships: []
+      }
+      questions: {
+        Row: {
+          budget: string | null
+          category: string
+          created_at: string
+          decided_at: string | null
+          decided_choice: string | null
+          duration_hours: number
+          ends_at: string | null
+          id: string
+          occasion: string | null
+          option_a_image: string
+          option_a_label: string
+          option_b_image: string
+          option_b_label: string
+          title: string
+          user_id: string
+          visibility: string
+        }
+        Insert: {
+          budget?: string | null
+          category?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_choice?: string | null
+          duration_hours?: number
+          ends_at?: string | null
+          id?: string
+          occasion?: string | null
+          option_a_image: string
+          option_a_label?: string
+          option_b_image: string
+          option_b_label?: string
+          title?: string
+          user_id: string
+          visibility?: string
+        }
+        Update: {
+          budget?: string | null
+          category?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_choice?: string | null
+          duration_hours?: number
+          ends_at?: string | null
+          id?: string
+          occasion?: string | null
+          option_a_image?: string
+          option_a_label?: string
+          option_b_image?: string
+          option_b_label?: string
+          title?: string
+          user_id?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vote_feedback: {
+        Row: {
+          anonymous: boolean
+          comment: string | null
+          created_at: string
+          id: string
+          question_id: string
+          tags: string[]
+          voter_id: string
+        }
+        Insert: {
+          anonymous?: boolean
+          comment?: string | null
+          created_at?: string
+          id?: string
+          question_id: string
+          tags?: string[]
+          voter_id: string
+        }
+        Update: {
+          anonymous?: boolean
+          comment?: string | null
+          created_at?: string
+          id?: string
+          question_id?: string
+          tags?: string[]
+          voter_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vote_feedback_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      votes: {
+        Row: {
+          anonymous: boolean
+          choice: string
+          created_at: string
+          id: string
+          question_id: string
+          user_id: string
+        }
+        Insert: {
+          anonymous?: boolean
+          choice: string
+          created_at?: string
+          id?: string
+          question_id: string
+          user_id: string
+        }
+        Update: {
+          anonymous?: boolean
+          choice?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "votes_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      decide_question: {
+        Args: { p_choice: string; p_question: string }
+        Returns: undefined
+      }
+      feed_page: {
+        Args: {
+          p_category: string
+          p_interests: string[]
+          p_limit: number
+          p_offset: number
+          p_sort: string
+          p_voter: string
+        }
+        Returns: {
+          id: string
+          matched: boolean
+        }[]
+      }
+      sync_ended_notifications: { Args: never; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
