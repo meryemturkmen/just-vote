@@ -55,6 +55,33 @@ export type Database = {
           },
         ]
       }
+      points_ledger: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          question_id: string | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          question_id?: string | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          question_id?: string | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -81,6 +108,7 @@ export type Database = {
       }
       questions: {
         Row: {
+          boosted_until: string | null
           budget: string | null
           category: string
           created_at: string
@@ -99,6 +127,7 @@ export type Database = {
           visibility: string
         }
         Insert: {
+          boosted_until?: string | null
           budget?: string | null
           category?: string
           created_at?: string
@@ -117,6 +146,7 @@ export type Database = {
           visibility?: string
         }
         Update: {
+          boosted_until?: string | null
           budget?: string | null
           category?: string
           created_at?: string
@@ -222,6 +252,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      boost_question: { Args: { p_question: string }; Returns: string }
       decide_question: {
         Args: { p_choice: string; p_question: string }
         Returns: undefined
@@ -238,6 +269,13 @@ export type Database = {
         Returns: {
           id: string
           matched: boolean
+        }[]
+      }
+      my_stats: {
+        Args: never
+        Returns: {
+          points: number
+          streak: number
         }[]
       }
       sync_ended_notifications: { Args: never; Returns: undefined }
