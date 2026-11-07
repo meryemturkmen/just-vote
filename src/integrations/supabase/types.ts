@@ -224,6 +224,38 @@ export type Database = {
           },
         ]
       }
+      share_events: {
+        Row: {
+          channel: string | null
+          created_at: string
+          id: string
+          kind: string
+          question_id: string | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          question_id?: string | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          question_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "share_events_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           id: string
@@ -320,6 +352,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_stats: { Args: { p_days?: number }; Returns: Json }
       boost_question: { Args: { p_question: string }; Returns: string }
       decide_question: {
         Args: { p_choice: string; p_question: string }
