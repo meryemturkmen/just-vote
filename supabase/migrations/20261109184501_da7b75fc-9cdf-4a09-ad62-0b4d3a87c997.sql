@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.question_has_choice(uuid,text) FROM PUBLIC,anon,authenticated;

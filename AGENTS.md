@@ -33,3 +33,4 @@ use the editor.
 - Points live in an append-only ledger written only by DB triggers/security-definer functions (votes award, boost spends); balance = sum, never client-written.
 - Expired-content cleanup runs as a daily managed HTTP schedule hitting /api/public/jobs/cleanup-expired (storage files need the Storage API, not SQL).
 - Question types live in questions.kind (ab|multi|buyskip); photos in option_a..d_image, buy-or-skip stores its single photo in both a and b, votes use a=Buy/b=Skip. UI reads the generic `options` array from hydrate(), never per-letter fields — keeps all types on one code path.
+- On a newly connected database, restore the application schema through managed migrations before using regenerated types; connection alone does not transfer tables, accounts, or storage files.
