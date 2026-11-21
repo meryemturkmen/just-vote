@@ -51,7 +51,7 @@ function JoinCrew() {
 
   if (loading || isLoading) return <AppShell><ListSkeleton /></AppShell>;
   if (!data) return (
-    <AppShell title="Dead link 💀">
+    <AppShell title="Link not found">
       <p className="text-muted-foreground">This invite doesn't work anymore. Ask your friend for a fresh one.</p>
       <Button asChild variant="hero" className="mt-6 h-12 w-full"><Link to="/">Go to the feed</Link></Button>
     </AppShell>
@@ -60,7 +60,7 @@ function JoinCrew() {
   return (
     <AppShell>
       <div className="flex flex-col items-center pt-8 text-center">
-        <span className="grid size-24 place-items-center rounded-2xl bg-lime text-5xl brut tilt-l animate-pop">{data.emoji}</span>
+        <span className="grid size-24 place-items-center rounded-2xl bg-lime text-5xl brut animate-pop">{data.emoji}</span>
         <p className="mt-6 text-sm font-bold uppercase">You're invited to</p>
         <h1 className="mt-1 text-3xl">{data.name}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{data.members} {data.members === 1 ? "member" : "members"} · private questions only they can see</p>

@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
+import { Check, ChevronLeft, Clock, Lock, ShoppingBag, X } from "lucide-react";
+import { EmptyState } from "@/components/EmptyState";
 import { toast } from "sonner";
 import { QuestionSkeleton } from "@/components/Skeleton";
 import { AppShell } from "@/components/AppShell";
@@ -67,15 +68,14 @@ function Detail() {
 
   return (
     <AppShell>
-      <Link to="/" className="mb-5 inline-flex items-center gap-1 rounded-lg bg-card px-3 py-1.5 text-sm font-bold brut-sm press">
-        <ArrowLeft className="size-4" strokeWidth={3} /> Feed
+      <Link to="/" className="-ml-1.5 mb-4 inline-flex items-center gap-0.5 text-[17px] text-foreground/80 press">
+        <ChevronLeft className="size-6" strokeWidth={1.8} /> Feed
       </Link>
       {isLoading && <QuestionSkeleton />}
       {!isLoading && !q && (
-        <p className="tilt-l inline-block rounded-lg bg-lime px-4 py-3 font-display text-2xl font-extrabold brut">This one's gone. Poof 💨</p>
-      )}
-      {!isLoading && !q && (
-        <p className="mt-4 font-medium">Expired, deleted or the link's busted. <Link to="/" className="font-extrabold underline">Judge something else →</Link></p>
+        <EmptyState className="py-16" title="This question is gone" action={<Link to="/" className="text-[15px] font-medium underline underline-offset-4">Back to the feed</Link>}>
+          It expired, was deleted, or the link is broken.
+        </EmptyState>
       )}
       {q && (
         <>
@@ -86,7 +86,7 @@ function Detail() {
           {q.myVote ? (
             <CommentSection q={q} />
           ) : (
-            <p className="mt-8 rounded-xl bg-card px-4 py-3 text-sm font-bold brut-sm tilt-r">💬 {q.commentCount} {q.commentCount === 1 ? "comment" : "comments"} hiding here. Vote to unlock the tea 🔒</p>
+            <p className="mt-8 flex items-center gap-3 rounded-2xl bg-card px-4 py-3.5 text-[15px] text-muted-foreground brut-sm"><Lock className="size-4 shrink-0" strokeWidth={1.8} /> Vote to see {q.commentCount} {q.commentCount === 1 ? "comment" : "comments"}.</p>
           )}
         </>
       )}
@@ -99,17 +99,17 @@ function Context({ q }: { q: Question }) {
     <section className="mb-5">
       <div className="flex flex-wrap items-center gap-2">
         <CategoryTag category={q.category} />
-        <Sticker className="bg-card">⏰ {timeLeft(q.ends_at)}</Sticker>
+        <Sticker><Clock className="size-3" strokeWidth={2} /> {timeLeft(q.ends_at)}</Sticker>
         <span className="ml-auto"><ReportButton questionId={q.id} /></span>
       </div>
-      <h1 className="mt-4 text-[34px] leading-[1]">{displayTitle(q)}</h1>
+      <h1 className="mt-4 text-[34px] leading-[1.08] tracking-[-0.03em] text-balance">{displayTitle(q)}</h1>
       {(q.occasion || q.budget) && (
         <div className="mt-3 flex flex-wrap gap-2">
-          {q.occasion && <Sticker>🎉 For: {q.occasion}</Sticker>}
-          {q.budget && <Sticker className="tilt-l">💸 Budget: {q.budget}</Sticker>}
+          {q.occasion && <Sticker>For {q.occasion}</Sticker>}
+          {q.budget && <Sticker>Budget {q.budget}</Sticker>}
         </div>
       )}
-      <p className="mt-3 text-sm font-medium">asked by <span className="font-extrabold">{q.author}</span></p>
+      <p className="mt-3 text-[14px] text-muted-foreground">Asked by <span className="font-medium text-foreground">{q.author}</span></p>
     </section>
   );
 }
@@ -122,15 +122,15 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: Choice) => vo
     const o = q.options[0];
     return (
       <div className="space-y-5">
-        <div className="relative overflow-hidden rounded-2xl border-2 bg-muted shadow-brut-lg rotate-[-0.8deg]">
+        <div className="relative overflow-hidden rounded-[28px] bg-muted brut">
           {o?.url && <img src={o.url} alt="The item" className="aspect-[4/5] w-full object-cover" />}
-          {q.decided_choice === "a" && <span className="animate-pop absolute bottom-3 right-3 rounded-md bg-lime px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">They bought it 🛍️</span>}
+          {q.decided_choice === "a" && <span className="animate-pop absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-lime px-3 py-1.5 text-[12px] font-semibold"><Check className="size-3.5" strokeWidth={2.2} /> They bought it</span>}
         </div>
         <div className="grid grid-cols-2 gap-3">
           {q.options.map((x) => (
             <button key={x.key} type="button" disabled={locked} onClick={() => onVote(x.key)}
-              className={cn("h-16 rounded-xl font-display text-xl font-extrabold brut press disabled:cursor-default", x.key === "a" ? "bg-lime tilt-l" : "bg-pink tilt-r", q.myVote === x.key && "ring-4 ring-ink ring-offset-2 ring-offset-background", show && q.myVote !== x.key && "opacity-60")}>
-              {x.key === "a" ? "🛒 Buy it" : "🙅 Skip it"}{show && ` · ${x.pct}%`}
+              className={cn("flex h-14 items-center justify-center gap-2 rounded-full text-[17px] font-semibold press disabled:cursor-default", x.key === "a" ? "bg-chrome" : "border border-border bg-white/[0.06]", q.myVote === x.key && "ring-iridescent", show && q.myVote !== x.key && "opacity-60")}>
+              {x.key === "a" ? <><ShoppingBag className="size-5" strokeWidth={1.8} /> Buy it</> : <><X className="size-5" strokeWidth={1.8} /> Skip it</>}{show && <span className="tabular-nums opacity-60">{x.pct}%</span>}
             </button>
           ))}
         </div>
@@ -139,7 +139,7 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: Choice) => vo
   }
   return (
     <div className="space-y-5">
-      {q.options.map(({ key: c, url, pct }, i) => {
+      {q.options.map(({ key: c, url, pct }) => {
         const mine = q.myVote === c;
         const won = q.decided_choice === c;
         return (
@@ -150,24 +150,23 @@ function Photos({ q, onVote, pending }: { q: Question; onVote: (c: Choice) => vo
             onClick={() => onVote(c)}
             aria-label={`Vote for option ${c.toUpperCase()}`}
             className={cn(
-              "relative block w-full overflow-hidden rounded-2xl border-2 bg-muted shadow-brut-lg press disabled:cursor-default",
-              i % 2 === 0 ? "rotate-[-0.8deg]" : "rotate-[0.8deg]",
-              mine && "ring-4 ring-primary ring-offset-2 ring-offset-background",
+              "relative block w-full overflow-hidden rounded-[28px] bg-muted brut press disabled:cursor-default",
+              mine && "ring-iridescent",
             )}
           >
             {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="aspect-[4/5] w-full object-cover" />}
-            <span className={cn("absolute left-3 top-3 grid size-12 place-items-center rounded-xl font-display text-2xl font-extrabold brut-sm", OPTION_COLORS[c], i % 2 === 0 ? "tilt-l" : "tilt-r")}>
+            <span className="absolute left-3 top-3 grid size-9 place-items-center rounded-full glass text-[15px] font-semibold">
               {c.toUpperCase()}
             </span>
-            {mine && <span className="animate-pop absolute right-3 top-3 rounded-md bg-primary px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">My pick</span>}
-            {won && <span className="animate-pop absolute bottom-16 right-3 rounded-md bg-lime px-2.5 py-1 text-xs font-extrabold uppercase brut-sm">They bought it 🛍️</span>}
+            {mine && <span className="animate-pop absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-chrome px-3 py-1.5 text-[12px] font-semibold"><Check className="size-3.5" strokeWidth={2.5} /> Your pick</span>}
+            {won && <span className="animate-pop absolute bottom-16 right-3 inline-flex items-center gap-1 rounded-full bg-lime px-3 py-1.5 text-[12px] font-semibold"><Check className="size-3.5" strokeWidth={2.2} /> They bought it</span>}
             {show && (
-              <span className="absolute bottom-3 right-3 rounded-lg bg-card px-3 py-1 font-display text-2xl font-extrabold brut-sm">
+              <span className="absolute bottom-3 right-3 rounded-full glass px-3.5 py-1.5 font-display text-[22px] font-bold tabular-nums tracking-[-0.03em]">
                 {pct}%
               </span>
             )}
             {!locked && (
-              <span className="absolute bottom-3 left-3 rounded-lg bg-card px-3 py-1.5 text-sm font-extrabold brut-sm">Tap to pick 👆</span>
+              <span className="absolute bottom-3 left-3 rounded-full glass px-3.5 py-2 text-[13px] font-medium">Tap to pick</span>
             )}
           </button>
         );
@@ -180,15 +179,15 @@ function Results({ q }: { q: Question }) {
   const { total, mine } = totals(q);
   const closed = isClosed(q);
   const decided = decisionLabel(q.decided_choice, q.kind);
-  const line = q.myVote ? verdictLine(mine, total) : "Voting's over. Here's the tea ☕";
+  const line = q.myVote ? verdictLine(mine, total) : "Voting's closed. Here's how it landed.";
   return (
-    <section className="mt-8 rounded-2xl bg-card p-5 brut">
+    <section className="mt-8">
       <div className="flex items-center justify-between">
-        <p className="font-display text-sm font-extrabold uppercase">{closed ? "Final results 🏁" : "Live results"}</p>
-        <p className="text-sm font-bold">{total} {total === 1 ? "vote" : "votes"}</p>
+        <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-muted-foreground">{closed ? "Final results" : "Live results"}</p>
+        <p className="text-[13px] tabular-nums text-muted-foreground">{total} {total === 1 ? "vote" : "votes"}</p>
       </div>
-      <p className="animate-pop mt-3 inline-block rounded-lg bg-yellow px-3 py-2 font-display text-xl font-extrabold leading-tight brut-sm">{line}</p>
-      {decided && <p className="mt-3 inline-block rounded-md bg-primary px-3 py-1 text-xs font-extrabold uppercase brut-sm">The asker {decided.toLowerCase()} 🎉</p>}
+      <p className="animate-pop mt-2 font-display text-[22px] font-semibold leading-tight tracking-[-0.02em]">{line}</p>
+      {decided && <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-lime px-3 py-1.5 text-[12px] font-semibold"><Check className="size-3.5" strokeWidth={2.2} /> The asker {decided.toLowerCase()}</p>}
       <div className="mt-4 space-y-3">
         {q.options.map((o) => (
           <AnimatedBar key={o.key} label={o.label} pct={o.pct} highlight={q.myVote === o.key} color={OPTION_COLORS[o.key]} />

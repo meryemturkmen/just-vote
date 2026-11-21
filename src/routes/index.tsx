@@ -7,6 +7,8 @@ import { AppShell } from "@/components/AppShell";
 import { QuestionCard } from "@/components/QuestionCard";
 import { Chip } from "@/components/CategoryChips";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/EmptyState";
+import { ArrowDownUp, WifiOff } from "lucide-react";
 import { FEED_PAGE, fetchFeedPage, type FeedSort } from "@/lib/questions";
 import { fetchInterests } from "@/lib/profile";
 import { CATEGORIES } from "@/lib/categories";
@@ -74,10 +76,10 @@ function Feed() {
     <WelcomeIntro onDone={() => setGuestInterests(readGuestInterests())} />
     <AppShell bleed>
       <div className="flex h-[calc(100dvh-70px)] flex-col">
-        <div className="border-b-2 bg-background px-4 py-2.5">
+        <div className="px-4 py-2.5">
           <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 pt-0.5">
             <SortToggle sort={sort} setSort={setSort} />
-            <Chip active={category === null} onClick={() => setCategory(null)}>{myInterests ? "For you ✨" : "All"}</Chip>
+            <Chip active={category === null} onClick={() => setCategory(null)}>{myInterests ? "For you" : "All"}</Chip>
             {CATEGORIES.map((c) => (
               <Chip key={c} active={category === c} onClick={() => setCategory(c)}>{c}</Chip>
             ))}
@@ -90,27 +92,24 @@ function Feed() {
           )}
 
           {feed.isError && (
-            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-              <p className="tilt-r rounded-lg bg-destructive px-4 py-2 font-display text-3xl font-extrabold text-destructive-foreground brut">Feed's having a moment 😵‍💫</p>
-              <p className="font-medium">Couldn't load questions. Check your wifi and try again.</p>
-              <Button variant="hero" size="xl" onClick={() => feed.refetch()}>Try again</Button>
-            </div>
+            <EmptyState className="h-full justify-center" icon={<WifiOff className="size-10 text-muted-foreground" strokeWidth={1.5} />} title="Couldn't load the feed"
+              action={<Button variant="hero" size="xl" onClick={() => feed.refetch()}>Try again</Button>}>
+              Check your connection and try again.
+            </EmptyState>
           )}
 
           {feed.isSuccess && items.length === 0 && (
-            <div className="flex h-full flex-col items-center justify-center gap-4 px-6 text-center">
-              <p className="tilt-l rounded-lg bg-lime px-4 py-2 font-display text-3xl font-extrabold brut">Nothing to judge yet 👀</p>
-              <p className="font-medium">Be the first to ask. Main character energy.</p>
-              <Button asChild variant="hero" size="xl"><Link to="/new">Ask the internet</Link></Button>
-            </div>
+            <EmptyState className="h-full justify-center" title="Nothing to vote on yet"
+              action={<Button asChild variant="hero" size="xl"><Link to="/new">Ask the first question</Link></Button>}>
+              Be the first to ask. Someone has to start.
+            </EmptyState>
           )}
 
           {items.map((q, i) => (
             <div key={q.id} className="contents">
               {i === dividerIndex && (
-                <section className="flex h-full snap-start snap-always flex-col items-center justify-center gap-3 px-8 text-center">
-                  <p className="tilt-r rounded-lg bg-primary px-4 py-3 font-display text-3xl font-extrabold leading-tight brut">More from other categories</p>
-                  <p className="font-medium">You've seen your faves. Time to judge other stuff 👇</p>
+                <section className="flex h-full snap-start snap-always flex-col justify-center">
+                  <EmptyState title="More from other categories">You've caught up on your favourites. Keep scrolling for everything else.</EmptyState>
                 </section>
               )}
               <QuestionCard q={q} />
@@ -118,10 +117,10 @@ function Feed() {
           ))}
 
           {feed.isSuccess && items.length > 0 && !feed.hasNextPage && (
-            <section className="flex h-full snap-start flex-col items-center justify-center gap-4 px-8 text-center">
-              <p className="tilt-l rounded-lg bg-lime px-4 py-3 font-display text-3xl font-extrabold brut">That's all, folks 🎉</p>
-              <p className="font-medium">You voted on everything. Touch grass or ask your own.</p>
-              <Button asChild variant="hero" size="xl"><Link to="/new">Ask a question</Link></Button>
+            <section className="flex h-full snap-start flex-col justify-center">
+              <EmptyState title="You're all caught up" action={<Button asChild variant="hero" size="xl"><Link to="/new">Ask a question</Link></Button>}>
+                You've voted on everything for now. Ask your own while new ones come in.
+              </EmptyState>
             </section>
           )}
           <div ref={sentinel} className="h-px" />
@@ -137,10 +136,11 @@ function SortToggle({ sort, setSort }: { sort: FeedSort; setSort: (s: FeedSort) 
     <button
       type="button"
       onClick={() => setSort(sort === "new" ? "ending" : "new")}
-      className="shrink-0 rounded-full bg-yellow px-4 py-2 text-sm font-extrabold brut-sm press"
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-white/[0.04] px-3.5 py-2 text-[14px] font-medium press"
       aria-label={`Sort: ${sort === "new" ? "New" : "Ending soon"}`}
     >
-      {sort === "new" ? "🆕 New" : "⏰ Ending soon"}
+      <ArrowDownUp className="size-3.5 text-muted-foreground" strokeWidth={2} />
+      {sort === "new" ? "Newest" : "Ending soon"}
     </button>
   );
 }

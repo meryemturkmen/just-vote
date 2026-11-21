@@ -4,15 +4,22 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Just Vote — "Liquid Chrome"
+ * Dark, quiet surfaces in the spirit of Apple's HIG (system type, materials,
+ * hairlines, continuous corners) with polished chrome as the single accent
+ * and a deep forest green as the secondary.
+ */
 @theme inline {
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 2px);
-  --radius-2xl: calc(var(--radius) + 4px);
-  --radius-3xl: calc(var(--radius) + 6px);
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-weight-extrabold: 700;
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: calc(var(--radius) - 2px);
+  --radius-xl: var(--radius);
+  --radius-2xl: calc(var(--radius) + 6px);
+  --radius-3xl: calc(var(--radius) + 12px);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -22,10 +29,9 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
-  --color-yellow: var(--yellow);
-  --color-lime: var(--lime);
-  --color-pink: var(--pink);
   --color-ink: var(--ink);
+  --color-silver: var(--silver);
+  --color-moss: var(--moss);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -38,85 +44,182 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
-  --shadow-card: var(--shadow-brut);
-  --shadow-float: var(--shadow-brut);
-  --shadow-brut-sm: 2px 2px 0 0 var(--ink);
-  --shadow-brut: 4px 4px 0 0 var(--ink);
-  --shadow-brut-lg: 6px 6px 0 0 var(--ink);
+  --shadow-card: var(--elev-1);
+  --shadow-float: var(--elev-2);
+  --shadow-brut-sm: var(--elev-1);
+  --shadow-brut: var(--elev-2);
+  --shadow-brut-lg: var(--elev-2);
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 :root {
-  --radius: 0.75rem;
-  --ink: oklch(0.15 0 0);
-  --yellow: oklch(0.92 0.19 105);
-  --lime: oklch(0.89 0.23 128);
-  --pink: oklch(0.7 0.25 355);
-  --background: oklch(0.975 0.018 95);
-  --foreground: var(--ink);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--ink);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--ink);
-  --primary: var(--pink);
-  --primary-foreground: var(--ink);
-  --primary-soft: var(--yellow);
-  --secondary: var(--lime);
-  --secondary-foreground: var(--ink);
-  --muted: oklch(0.94 0.02 95);
-  --muted-foreground: oklch(0.38 0.01 95);
-  --accent: var(--yellow);
-  --accent-foreground: var(--ink);
-  --destructive: oklch(0.6 0.24 27);
+  color-scheme: dark;
+  --radius: 1rem;
+
+  /* Neutrals: near-black with a breath of green, like the star poster */
+  --background: oklch(0.13 0.006 150);
+  --card: oklch(0.185 0.007 150);
+  --muted: oklch(0.235 0.007 150);
+  --foreground: oklch(0.96 0.003 150);
+  --muted-foreground: oklch(0.7 0.008 150);
+  --ink: var(--foreground);
+
+  /* Accents */
+  --silver: oklch(0.86 0.004 150);
+  --moss: oklch(0.33 0.055 140);
+  --moss-hi: oklch(0.82 0.1 145);
+
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.2 0.007 150);
+  --popover-foreground: var(--foreground);
+  --primary: var(--silver);
+  --primary-foreground: oklch(0.14 0 0);
+  --primary-soft: var(--muted);
+  --secondary: var(--moss);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--muted);
+  --accent-foreground: var(--foreground);
+  --destructive: oklch(0.65 0.2 25);
   --destructive-foreground: oklch(1 0 0);
-  --border: var(--ink);
-  --input: var(--ink);
-  --ring: var(--ink);
+  --border: oklch(1 0 0 / 0.09);
+  --input: oklch(1 0 0 / 0.12);
+  --ring: oklch(0.86 0.004 150 / 0.6);
+
+  --hairline: oklch(1 0 0 / 0.08);
+  --highlight: oklch(1 0 0 / 0.07);
+  --elev-1: 0 1px 0 0 var(--highlight) inset, 0 1px 2px oklch(0 0 0 / 0.4), 0 6px 16px -6px oklch(0 0 0 / 0.5);
+  --elev-2: 0 1px 0 0 var(--highlight) inset, 0 2px 4px oklch(0 0 0 / 0.35), 0 18px 40px -12px oklch(0 0 0 / 0.7);
+
+  /* Polished liquid metal */
+  --chrome:
+    radial-gradient(120% 90% at 18% 0%, oklch(1 0 0 / 0.95), transparent 42%),
+    radial-gradient(90% 70% at 100% 100%, oklch(1 0 0 / 0.55), transparent 50%),
+    linear-gradient(158deg, #fbfbfb 0%, #b9b9b9 17%, #f3f3f3 31%, #7a7a7a 49%, #d6d6d6 63%, #8e8e8e 80%, #ececec 100%);
+  --iridescent: conic-gradient(from 210deg, #f2f2f2, #b8c9ff, #f2f2f2, #ffd0e6, #f2f2f2, #c9ffe0, #f2f2f2);
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
   }
-  body {
+  html {
     background-color: var(--color-background);
+  }
+  body {
+    position: relative;
+    min-height: 100dvh;
+    background-color: var(--color-background);
+    background-image:
+      radial-gradient(110% 55% at 50% -12%, oklch(0.36 0.06 140 / 0.6), transparent 72%),
+      radial-gradient(60% 40% at 100% 0%, oklch(1 0 0 / 0.05), transparent 70%);
+    background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Film grain, like the reference prints */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.07;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
   h1, h2, h3 {
     font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.03em;
+    font-weight: 700;
+    letter-spacing: -0.022em;
   }
-  input, textarea {
-    border-width: 2px !important;
+  ::selection {
+    background: oklch(0.86 0.004 150 / 0.35);
+  }
+  input, textarea, select {
+    border-width: 1px !important;
+    background-color: oklch(1 0 0 / 0.05);
+  }
+  input::placeholder, textarea::placeholder {
+    color: oklch(0.7 0.008 150 / 0.7);
   }
 }
 
-/* Chunky outlined box with a hard offset shadow */
+/* ── Surfaces ─────────────────────────────────────────────── */
+
+/* Elevated card: hairline + soft depth + top highlight */
 @utility brut {
-  border: 2px solid var(--ink);
-  box-shadow: var(--shadow-brut);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--elev-2);
 }
 @utility brut-sm {
-  border: 2px solid var(--ink);
-  box-shadow: var(--shadow-brut-sm);
+  border: 1px solid var(--hairline);
+  box-shadow: var(--elev-1);
 }
 
-/* Press-down: element sinks into its shadow when tapped */
+/* Translucent material (bars, sheets) */
+@utility glass {
+  background-color: oklch(0.17 0.006 150 / 0.62);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid oklch(1 0 0 / 0.1);
+  box-shadow: 0 1px 0 0 oklch(1 0 0 / 0.08) inset, 0 20px 50px -20px oklch(0 0 0 / 0.8);
+}
+
+/* Fills: names kept so existing markup maps onto the new palette */
+@utility bg-chrome {
+  background: var(--chrome);
+  color: oklch(0.14 0 0);
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.9) inset, 0 -1px 0 oklch(0 0 0 / 0.25) inset, 0 8px 24px -10px oklch(0 0 0 / 0.8);
+}
+@utility bg-yellow {
+  background: var(--chrome);
+  color: oklch(0.14 0 0);
+}
+@utility bg-lime {
+  background-color: var(--moss);
+  background-image: linear-gradient(180deg, oklch(1 0 0 / 0.08), transparent 60%);
+  color: var(--foreground);
+}
+@utility bg-pink {
+  background-color: oklch(0.27 0.006 150);
+  background-image: linear-gradient(180deg, oklch(1 0 0 / 0.07), transparent 60%);
+  color: var(--foreground);
+}
+@utility text-moss {
+  color: var(--moss-hi);
+}
+@utility text-chrome {
+  background: linear-gradient(180deg, #ffffff 0%, #cfcfcf 45%, #8a8a8a 55%, #e9e9e9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@utility ring-iridescent {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px oklch(0.92 0.02 260), 0 0 24px 2px oklch(0.85 0.06 260 / 0.35);
+}
+
+/* ── Motion ───────────────────────────────────────────────── */
+
+/* Press: gentle spring scale, like a UIKit highlight */
 @utility press {
-  transition: transform 90ms ease-out, box-shadow 90ms ease-out;
+  transition: transform 260ms var(--ease-spring), opacity 200ms ease, background-color 200ms ease;
   &:active:not(:disabled) {
-    transform: translate(4px, 4px);
-    box-shadow: 0 0 0 0 var(--ink);
+    transform: scale(0.965);
+    opacity: 0.9;
   }
 }
 
+/* Tilts were part of the old sticker look; intentionally flat now */
 @utility tilt-l {
-  transform: rotate(-3deg);
+  transform: none;
 }
 @utility tilt-r {
-  transform: rotate(2.5deg);
+  transform: none;
 }
 
 @utility no-scrollbar {
@@ -127,29 +230,38 @@
 }
 
 @keyframes pop-in {
-  0% { transform: scale(0.6) rotate(-8deg); opacity: 0; }
-  70% { transform: scale(1.08) rotate(2deg); opacity: 1; }
-  100% { transform: scale(1) rotate(-2deg); }
+  from { transform: scale(0.94); opacity: 0; filter: blur(4px); }
+  to { transform: none; opacity: 1; filter: none; }
 }
 @utility animate-pop {
-  animation: pop-in 380ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  animation: pop-in 420ms var(--ease-spring) both;
 }
 
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-3deg); }
-  50% { transform: rotate(3deg); }
+@keyframes badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
 }
 @utility animate-wiggle {
-  animation: wiggle 1.4s ease-in-out infinite;
+  animation: badge-pulse 2.4s var(--ease-spring) infinite;
 }
 
 @keyframes page-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: none; }
 }
 @utility animate-page {
-  animation: page-in 260ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  animation: page-in 380ms var(--ease-spring) both;
 }
+
+@keyframes sheen {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+@utility animate-sheen {
+  background-size: 200% 100%;
+  animation: sheen 6s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-page, .animate-pop, .animate-wiggle { animation: none; }
+  .animate-page, .animate-pop, .animate-wiggle, .animate-sheen { animation: none; }
 }

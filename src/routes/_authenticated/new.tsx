@@ -140,10 +140,10 @@ function NewQuestion() {
     return (
       <AppShell>
         <div className="flex flex-col items-center pt-10 text-center">
-          <span className="grid size-20 place-items-center rounded-2xl bg-lime brut animate-pop">
+          <span className="grid size-20 place-items-center rounded-full bg-lime brut animate-pop">
             <PartyPopper className="size-9" />
           </span>
-          <h1 className="mt-6 text-2xl font-bold">It's live! 🎉</h1>
+          <h1 className="mt-6 text-2xl font-bold">It's live</h1>
           <p className="mt-2 max-w-xs text-sm text-muted-foreground">
             {crewId ? "Only your crew can see this one. Tell them it's up 🫂" : isPublic ? "Your friends are already voting. Probably. Send it to make sure." : "Link only. Drop it in the group chat 👀"}
           </p>
@@ -159,17 +159,17 @@ function NewQuestion() {
   }
 
   return (
-    <AppShell title="Help. I can't pick.">
+    <AppShell title="New question">
       <form onSubmit={submit} className="space-y-7">
         <Section label="Type">
           <div className="grid grid-cols-3 gap-2">
-            {QUESTION_KINDS.map((k, i) => (
+            {QUESTION_KINDS.map((k) => (
               <button
                 key={k.value}
                 type="button"
                 onClick={() => setKind(k.value)}
                 aria-pressed={kind === k.value}
-                className={cn("rounded-xl px-2 py-2.5 text-left brut-sm press", kind === k.value ? "bg-yellow" : "bg-card", i === 1 ? "tilt-r" : "tilt-l")}
+                className={cn("rounded-2xl border px-3 py-3 text-left press", kind === k.value ? "border-white/35 bg-white/[0.12]" : "border-border bg-white/[0.03]")}
               >
                 <span className="block font-display text-sm font-extrabold leading-tight">{k.label}</span>
                 <span className="mt-0.5 block text-[11px] leading-tight text-muted-foreground">{k.hint}</span>
@@ -203,26 +203,26 @@ function NewQuestion() {
         </Section>
 
         <Section label="Title" hint="optional">
-          <Input className="h-12 rounded-xl bg-card" placeholder='"Which one for the wedding?"' value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
+          <Input className="h-12" placeholder='"Which one for the wedding?"' value={title} onChange={(e) => setTitle(e.target.value)} maxLength={120} />
         </Section>
 
         <div className="grid grid-cols-2 gap-3">
           <Section label="Occasion" hint="optional">
-            <Input className="h-12 rounded-xl bg-card" placeholder="e.g. Wedding" value={occasion} onChange={(e) => setOccasion(e.target.value)} maxLength={40} />
+            <Input className="h-12" placeholder="e.g. Wedding" value={occasion} onChange={(e) => setOccasion(e.target.value)} maxLength={40} />
           </Section>
           <Section label="Budget" hint="optional">
-            <Input className="h-12 rounded-xl bg-card" placeholder="e.g. up to €150" value={budget} onChange={(e) => setBudget(e.target.value)} maxLength={30} />
+            <Input className="h-12" placeholder="e.g. up to €150" value={budget} onChange={(e) => setBudget(e.target.value)} maxLength={30} />
           </Section>
         </div>
 
         <Section label="Voting duration">
-          <div className="grid grid-cols-3 gap-2 rounded-xl bg-card p-1 brut-sm">
+          <div className="grid grid-cols-3 gap-2 rounded-xl bg-white/[0.06] p-1">
             {DURATIONS.map((d) => (
               <button
                 key={d.h}
                 type="button"
                 onClick={() => setDuration(d.h)}
-                className={cn("rounded-lg py-2.5 text-sm font-extrabold", duration === d.h ? "bg-ink text-background" : "text-muted-foreground")}
+                className={cn("rounded-lg py-2.5 text-sm font-extrabold", duration === d.h ? "bg-white/[0.16] text-foreground" : "text-muted-foreground")}
               >
                 {d.label}
               </button>
@@ -287,29 +287,29 @@ function PhotoPicker({ name, photo, set, optional }: { name: string; photo: Phot
   }
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border-2 border-dashed bg-card shadow-brut">
+    <div className="relative overflow-hidden rounded-3xl border border-dashed border-white/15 bg-white/[0.03]">
       <div className="aspect-[3/4]">
         {photo ? (
           <>
             <img src={photo.preview} alt={`Option ${name}`} className="size-full object-cover" />
-            <button type="button" aria-label={`Remove photo ${name}`} onClick={() => set(null)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-md bg-card brut-sm">
+            <button type="button" aria-label={`Remove photo ${name}`} onClick={() => set(null)} className="absolute right-2 top-2 grid size-8 place-items-center rounded-full glass">
               <X className="size-4" />
             </button>
-            <span className="absolute left-2 top-2 grid size-9 place-items-center rounded-md bg-yellow font-display text-lg font-extrabold brut-sm tilt-l">{name}</span>
+            <span className="absolute left-2 top-2 grid size-9 place-items-center rounded-full glass font-display text-[15px] font-semibold">{name}</span>
           </>
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-3 p-3">
-            <span className="font-display text-5xl font-extrabold">{name}</span>
+            <span className="font-display text-5xl font-semibold text-chrome">{name}</span>
             {optional && <span className="-mt-2 text-[11px] font-bold text-muted-foreground">optional</span>}
             {working ? (
               <p className="text-xs text-muted-foreground">Shrinking…</p>
             ) : (
               <div className="flex w-full flex-col gap-2">
-                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-card py-2.5 text-xs font-extrabold brut-sm press">
+                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border bg-white/[0.05] py-2.5 text-[13px] font-medium press">
                   <Camera className="size-4 text-foreground" /> Camera
                   <input type="file" accept="image/*" capture="environment" className="sr-only" onChange={onFile} aria-label={`Take photo ${name}`} />
                 </label>
-                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-card py-2.5 text-xs font-extrabold brut-sm press">
+                <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-full border border-border bg-white/[0.05] py-2.5 text-[13px] font-medium press">
                   <ImagePlus className="size-4 text-foreground" /> Gallery
                   <input type="file" accept="image/*" className="sr-only" onChange={onFile} aria-label={`Choose photo ${name}`} />
                 </label>

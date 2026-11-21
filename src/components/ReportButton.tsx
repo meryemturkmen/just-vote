@@ -41,8 +41,8 @@ export function ReportButton({ questionId, compact, onReport, label = "Report qu
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerContent>
           <DrawerHeader>
-            <DrawerTitle className="font-display text-xl">Something off? 🚩</DrawerTitle>
-            <DrawerDescription>Tell us what's sus.</DrawerDescription>
+            <DrawerTitle className="font-display text-xl">Report this question</DrawerTitle>
+            <DrawerDescription>Tell us what’s wrong. We review every report.</DrawerDescription>
           </DrawerHeader>
           <div className="space-y-2 px-4 pb-6">
             {REPORT_REASONS.map((r) => (
@@ -50,7 +50,7 @@ export function ReportButton({ questionId, compact, onReport, label = "Report qu
                 key={r.value}
                 type="button"
                 onClick={() => setReason(r.value)}
-                className={cn("w-full rounded-xl bg-card px-4 py-3 text-left text-sm font-bold brut-sm press", reason === r.value && "bg-yellow")}
+                className={cn("w-full rounded-2xl border border-border bg-white/[0.04] px-4 py-3.5 text-left text-[15px] font-medium press", reason === r.value && "border-white/30 bg-white/[0.12]")}
               >
                 {r.label}
               </button>

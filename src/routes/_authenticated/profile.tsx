@@ -102,8 +102,8 @@ function Profile() {
   }
 
   return (
-    <AppShell title="It's you!">
-      <div className="flex items-center gap-4 rounded-2xl bg-yellow p-5 brut">
+    <AppShell title="Profile">
+      <div className="flex items-center gap-4 rounded-2xl bg-white/[0.08] p-5 brut">
         <AvatarSticker emoji={emoji} color={color} size="lg" />
         <div className="min-w-0">
           <p className="truncate font-display text-lg font-semibold">{name || "Mystery voter"}</p>
@@ -113,8 +113,8 @@ function Profile() {
       </div>
       <div className="mt-4 grid grid-cols-3 gap-2">
         {data?.username && <Button asChild variant="soft" className="h-11 px-2 text-sm"><Link to="/u/$username" params={{ username: data.username }}>My page</Link></Button>}
-        <Button asChild variant="lime" className="h-11 px-2 text-sm"><Link to="/crews">Crews 🫂</Link></Button>
-        <Button asChild variant="soft" className="h-11 px-2 text-sm"><Link to="/leaderboard">Top 🏆</Link></Button>
+        <Button asChild variant="lime" className="h-11 px-2 text-sm"><Link to="/crews">Crews</Link></Button>
+        <Button asChild variant="soft" className="h-11 px-2 text-sm"><Link to="/leaderboard">Leaderboard</Link></Button>
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <Stat n={stats.data?.points ?? 0} label="⭐ Points" />
@@ -136,12 +136,12 @@ function Profile() {
         <label className="text-sm font-medium">Avatar sticker</label>
         <div className="flex flex-wrap gap-2">
           {AVATAR_EMOJIS.map((e) => (
-            <button key={e} type="button" aria-pressed={emoji === e} onClick={() => setEmoji(e)} className={cn("grid size-10 place-items-center rounded-lg text-xl brut-sm", emoji === e ? "bg-ink" : "bg-card")}>{e}</button>
+            <button key={e} type="button" aria-pressed={emoji === e} onClick={() => setEmoji(e)} className={cn("grid size-10 place-items-center rounded-lg text-xl brut-sm", emoji === e ? "bg-white/[0.18] ring-1 ring-white/40" : "bg-card")}>{e}</button>
           ))}
         </div>
         <div className="flex gap-2">
           {AVATAR_COLORS.map((c) => (
-            <button key={c} type="button" aria-label={`Color ${c}`} aria-pressed={color === c} onClick={() => setColor(c)} className={cn("size-10 rounded-full brut-sm", { yellow: "bg-yellow", pink: "bg-pink", lime: "bg-lime", card: "bg-card" }[c], color === c && "ring-4 ring-ink")} />
+            <button key={c} type="button" aria-label={`Color ${c}`} aria-pressed={color === c} onClick={() => setColor(c)} className={cn("size-10 rounded-full brut-sm", { yellow: "bg-chrome", pink: "bg-pink", lime: "bg-lime", card: "bg-card" }[c], color === c && "ring-4 ring-ink")} />
           ))}
         </div>
         <label className="block text-sm font-medium">Username</label>
@@ -156,15 +156,15 @@ function Profile() {
         <LegalLinks className="mt-3 justify-start text-sm" />
         {isAdmin.data && (
           <div className="mt-4 grid grid-cols-2 gap-2">
-            <Button asChild variant="hero" className="h-11"><Link to="/admin">Reports 🚨</Link></Button>
-            <Button asChild variant="lime" className="h-11"><Link to="/stats">Stats 📊</Link></Button>
+            <Button asChild variant="hero" className="h-11"><Link to="/admin">Reports</Link></Button>
+            <Button asChild variant="lime" className="h-11"><Link to="/stats">Stats</Link></Button>
           </div>
         )}
       </div>
-      <div className="mt-6 rounded-2xl border-2 bg-destructive/10 p-4">
-        <p className="font-display font-semibold">Danger zone ☠️</p>
+      <div className="mt-6 rounded-2xl border bg-destructive/10 p-4">
+        <p className="font-display font-semibold">Danger zone</p>
         <p className="mt-1 text-sm">Removes your account, questions, photos, votes, comments and points. Forever.</p>
-        <Button variant="destructive" className="mt-3 h-12 w-full border-2 font-extrabold" disabled={deleting} onClick={nuke}>
+        <Button variant="destructive" className="mt-3 h-12 w-full" disabled={deleting} onClick={nuke}>
           {deleting ? "Deleting…" : "Delete my account and all my data"}
         </Button>
       </div>

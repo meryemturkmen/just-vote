@@ -23,11 +23,11 @@ export const Route = createFileRoute("/_authenticated/stats")({
 });
 
 const METRICS = [
-  { key: "signups", label: "Sign-ups", emoji: "🙋", color: "bg-yellow" },
-  { key: "questions", label: "Questions", emoji: "❓", color: "bg-primary" },
+  { key: "signups", label: "Sign-ups", emoji: "🙋", color: "bg-white/[0.12]" },
+  { key: "questions", label: "Questions", emoji: "❓", color: "bg-chrome" },
   { key: "votes", label: "Votes", emoji: "🗳️", color: "bg-lime" },
-  { key: "shares", label: "Share clicks", emoji: "📤", color: "bg-yellow" },
-  { key: "opens", label: "Link opens", emoji: "🔗", color: "bg-primary" },
+  { key: "shares", label: "Share clicks", emoji: "📤", color: "bg-white/[0.12]" },
+  { key: "opens", label: "Link opens", emoji: "🔗", color: "bg-chrome" },
 ] as const;
 type Key = (typeof METRICS)[number]["key"];
 type Day = Record<Key, number> & { day: string };
@@ -54,7 +54,7 @@ function Stats() {
 
   if (isAdmin.isLoading) return <AppShell title="Stats"><ListSkeleton /></AppShell>;
   if (!isAdmin.data) {
-    return <AppShell title="Nope 🙅"><p className="font-medium">Admins only. <Link to="/" className="font-extrabold underline">Back to the feed</Link></p></AppShell>;
+    return <AppShell title="No access"><p className="font-medium">Admins only. <Link to="/" className="font-extrabold underline">Back to the feed</Link></p></AppShell>;
   }
 
   const daily = stats.data?.daily ?? [];
@@ -63,7 +63,7 @@ function Stats() {
   const opens = inRange("opens"), shares = inRange("shares");
 
   return (
-    <AppShell title="The numbers 📊">
+    <AppShell title="Stats">
       <div className="mb-4 grid grid-cols-3 gap-2">
         {[7, 14, 30].map((d) => (
           <Button key={d} variant={days === d ? "hero" : "soft"} className="h-10" onClick={() => setDays(d)}>{d} days</Button>
@@ -97,7 +97,7 @@ function Stats() {
             <div className="mt-3 flex h-40 items-end gap-[3px]" role="img" aria-label={`${metric} per day`}>
               {daily.map((d) => (
                 <div key={d.day} className="flex min-w-0 flex-1 flex-col items-center justify-end" title={`${d.day}: ${d[metric]}`}>
-                  <div className="w-full rounded-t-sm border-2 border-b-0 bg-primary" style={{ height: `${(Number(d[metric]) / max) * 100}%`, minHeight: Number(d[metric]) ? 4 : 0 }} />
+                  <div className="w-full rounded-t-sm border border-b-0 bg-chrome" style={{ height: `${(Number(d[metric]) / max) * 100}%`, minHeight: Number(d[metric]) ? 4 : 0 }} />
                 </div>
               ))}
             </div>

@@ -24,7 +24,6 @@ export const Route = createFileRoute("/leaderboard")({
   component: Leaderboard,
 });
 
-const MEDALS = ["🥇", "🥈", "🥉"];
 
 function Leaderboard() {
   const { user } = useUser();
@@ -36,12 +35,12 @@ function Leaderboard() {
   });
 
   return (
-    <AppShell title="Most helpful this week 🏆">
-      <p className="text-sm text-muted-foreground">Points from votes + reactions on your comments. Last 7 days.</p>
+    <AppShell title="Leaderboard">
+      <p className="text-sm text-muted-foreground">Most helpful this week — points from votes and reactions on your comments.</p>
       {user && (
-        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-card p-1 brut-sm">
+        <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-white/[0.06] p-1">
           {(["all", "following"] as const).map((s) => (
-            <button key={s} type="button" onClick={() => setScope(s)} className={cn("rounded-lg py-2 text-sm font-extrabold", scope === s ? "bg-ink text-background" : "text-muted-foreground")}>
+            <button key={s} type="button" onClick={() => setScope(s)} className={cn("rounded-lg py-2 text-sm font-extrabold", scope === s ? "bg-white/[0.16] text-foreground" : "text-muted-foreground")}>
               {s === "all" ? "Everyone" : "People I follow"}
             </button>
           ))}
@@ -54,17 +53,17 @@ function Leaderboard() {
       <ol className="mt-4 space-y-2">
         {isLoading ? <ListSkeleton /> : data?.length ? data.map((r, i) => (
           <li key={r.user_id}>
-            <Link to="/u/$username" params={{ username: r.username }} className={cn("flex items-center gap-3 rounded-xl p-3 brut-sm press", r.user_id === user?.id ? "bg-yellow" : "bg-card")}>
-              <span className="w-8 text-center font-display text-lg font-extrabold">{MEDALS[i] ?? i + 1}</span>
+            <Link to="/u/$username" params={{ username: r.username }} className={cn("flex items-center gap-3 rounded-2xl p-3 brut-sm press", r.user_id === user?.id ? "bg-white/[0.12]" : "bg-card")}>
+              <span className={cn("w-7 text-center font-display text-[17px] font-semibold tabular-nums text-muted-foreground", i < 3 && "text-chrome text-[20px] font-bold")}>{i + 1}</span>
               <AvatarSticker emoji={r.avatar_emoji} color={r.avatar_color} size="sm" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{r.display_name || r.username}</span>
                 <span className="block truncate text-xs text-muted-foreground">@{r.username}</span>
               </span>
-              <span className="font-display text-lg font-extrabold">{r.points}</span>
+              <span className="font-display text-[17px] font-semibold tabular-nums">{r.points}</span>
             </Link>
           </li>
-        )) : <p className="rounded-xl bg-card p-5 text-center brut-sm">Nobody's on the board yet. Free real estate 🏠</p>}
+        )) : <p className="rounded-xl bg-card p-5 text-center brut-sm">Nobody’s on the board yet this week.</p>}
       </ol>
     </AppShell>
   );

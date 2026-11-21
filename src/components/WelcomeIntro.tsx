@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/Logo";
+import { ChromeStar, Logo } from "@/components/Logo";
+import { Hand } from "lucide-react";
 import { InterestPicker } from "@/components/InterestPicker";
 import { CATEGORIES } from "@/lib/categories";
 import { cn } from "@/lib/utils";
@@ -40,36 +41,36 @@ export function WelcomeIntro({ onDone }: { onDone?: () => void }) {
       <div className="mx-auto flex min-h-[100dvh] max-w-md flex-col px-5 pb-6 pt-6">
         <div className="flex items-center justify-between">
           <Logo />
-          <button onClick={finish} className="text-sm font-extrabold underline underline-offset-4">Skip</button>
+          <button onClick={finish} className="rounded-full px-3 py-1.5 text-[15px] text-muted-foreground press">Skip</button>
         </div>
 
         <div key={step} className="animate-page flex flex-1 flex-col pt-8">
           {step === 0 && (
             <>
-              <div className="flex justify-center gap-3 py-6">
-                <span className="tilt-l grid size-28 place-items-center rounded-2xl bg-primary font-display text-6xl font-extrabold brut">A</span>
-                <span className="tilt-r grid size-28 place-items-center rounded-2xl bg-lime font-display text-6xl font-extrabold brut">B</span>
+              <div className="relative mx-auto my-6 grid aspect-square w-full max-w-[300px] place-items-center overflow-hidden rounded-[36px] bg-[#1f2f1c] brut">
+                <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_45%,rgba(255,255,255,0.12),transparent_70%)]" />
+                <ChromeStar className="animate-pop size-48" />
               </div>
-              <h1 className="text-[2.6rem] leading-[0.95]">Can't pick? Just vote.</h1>
-              <p className="mt-3 text-lg font-medium">Post two pics of stuff you wanna buy. Strangers pick one. You stop overthinking. Win-win.</p>
+              <h1 className="text-[40px] leading-[1.02] tracking-[-0.035em]">Can't decide?<br /><span className="text-chrome">Just vote.</span></h1>
+              <p className="mt-4 text-[17px] leading-relaxed text-muted-foreground">Post the options you're torn between. People pick one. You stop overthinking.</p>
             </>
           )}
           {step === 1 && (
             <>
-              <h1 className="text-[2.4rem] leading-[0.95]">What are you nosy about?</h1>
-              <p className="mt-2 font-medium">Pick your categories. Change it anytime, no drama.</p>
+              <h1 className="text-[34px] leading-[1.05] tracking-[-0.03em]">What are you into?</h1>
+              <p className="mt-2 text-[17px] text-muted-foreground">Pick your categories. You can change them anytime.</p>
               <div className="mt-6"><InterestPicker value={interests} onChange={setInterests} /></div>
             </>
           )}
           {step === 2 && (
             <>
-              <p className="tilt-l self-start rounded-lg bg-yellow px-3 py-1 font-display text-lg font-extrabold brut-sm">Your first vote 👆</p>
-              <h1 className="mt-5 text-[2.6rem] leading-[0.95]">Tap a photo. That's it.</h1>
-              <p className="mt-3 text-lg font-medium">One tap = one vote. Swipe up for the next one. No login needed.</p>
-              <div className="relative mt-8 grid grid-cols-2 gap-3">
-                <div className="h-36 rounded-2xl bg-card brut" />
-                <div className="h-36 rounded-2xl bg-card brut" />
-                <span className="animate-wiggle absolute left-[18%] top-[45%] text-5xl" aria-hidden>👆</span>
+              <p className="text-[13px] font-medium uppercase tracking-[0.08em] text-muted-foreground">Your first vote</p>
+              <h1 className="mt-2 text-[34px] leading-[1.05] tracking-[-0.03em]">Tap a photo.<br />That's it.</h1>
+              <p className="mt-3 text-[17px] leading-relaxed text-muted-foreground">One tap is one vote. Swipe up for the next. No account needed.</p>
+              <div className="relative mt-8 grid grid-cols-2 gap-2.5">
+                <div className="h-40 rounded-[24px] bg-card ring-iridescent" />
+                <div className="h-40 rounded-[24px] bg-card brut" />
+                <Hand className="animate-wiggle absolute left-[20%] top-[42%] size-10 text-foreground" strokeWidth={1.5} aria-hidden />
               </div>
             </>
           )}
@@ -78,7 +79,7 @@ export function WelcomeIntro({ onDone }: { onDone?: () => void }) {
         <div className="mt-6 flex items-center justify-between gap-4">
           <div className="flex gap-2" aria-label={`Step ${step + 1} of 3`}>
             {[0, 1, 2].map((i) => (
-              <span key={i} className={cn("h-3 rounded-full border-2 transition-all", i === step ? "w-8 bg-primary" : "w-3 bg-card")} />
+              <span key={i} className={cn("h-2 rounded-full shadow-none transition-all duration-500", i === step ? "w-6 bg-chrome" : "w-2 bg-white/20")} />
             ))}
           </div>
           <Button
@@ -86,7 +87,7 @@ export function WelcomeIntro({ onDone }: { onDone?: () => void }) {
             className="h-12 min-w-36"
             onClick={() => (step < 2 ? setStep(step + 1) : finish())}
           >
-            {step === 0 ? "Show me" : step === 1 ? "Looks good" : "Let me vote!"}
+            {step === 0 ? "Show me" : step === 1 ? "Looks good" : "Start voting"}
           </Button>
         </div>
       </div>

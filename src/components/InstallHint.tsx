@@ -24,13 +24,13 @@ export function InstallHint() {
   if (!show) return null;
   return (
     <div className="fixed inset-x-0 bottom-28 z-50 mx-auto max-w-md px-4">
-      <div className="animate-pop relative rounded-2xl bg-yellow p-4 pr-12 brut">
-        <button onClick={() => setShow(false)} aria-label="Close" className="absolute right-2 top-2 grid size-9 place-items-center rounded-lg bg-card brut-sm press">
-          <X className="size-4" strokeWidth={3} />
+      <div className="animate-pop relative rounded-3xl p-4 pr-12 glass">
+        <button onClick={() => setShow(false)} aria-label="Close" className="absolute right-2 top-2 grid size-9 place-items-center rounded-full bg-white/10 press">
+          <X className="size-4" strokeWidth={2} />
         </button>
-        <p className="font-display text-xl font-extrabold leading-tight">Ok you're hooked 👀</p>
-        <p className="mt-1 text-sm font-medium">
-          {ios ? <>Tap <b>Share</b> → <b>Add to Home Screen</b> to keep Just Vote one tap away.</> : <>Tap the <b>⋮ menu</b> → <b>Add to Home screen</b> to keep Just Vote one tap away.</>}
+        <p className="font-display text-[17px] font-semibold leading-tight">Keep Just Vote one tap away</p>
+        <p className="mt-1 text-[14px] text-muted-foreground">
+          {ios ? <>Tap <b>Share</b> → <b>Add to Home Screen</b> to keep Just Vote one tap away.</> : <>Tap the <b>⋮</b> menu → <b>Add to Home screen</b> to keep Just Vote one tap away.</>}
         </p>
       </div>
     </div>

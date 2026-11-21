@@ -31,26 +31,26 @@ function Notifications() {
   }, [isSuccess, data, qc]);
 
   return (
-    <AppShell title="What's new 🔔">
+    <AppShell title="Notifications">
       {isLoading && <ListSkeleton rows={4} h="h-20" />}
       {data?.length === 0 && (
-        <div className="rounded-2xl bg-yellow p-8 text-center brut tilt-l">
-          <p className="font-display text-lg font-semibold">Crickets 🦗</p>
+        <div className="rounded-2xl bg-white/[0.08] p-8 text-center brut">
+          <p className="font-display text-lg font-semibold">Nothing new yet</p>
           <p className="mt-1 text-sm text-muted-foreground">We'll ping you when people vote on your stuff.</p>
         </div>
       )}
       <ul className="space-y-2">
         {data?.map((n) => (
           <li key={n.id}>
-            <Link to="/q/$id" params={{ id: n.question_id }} className={cn("flex items-center gap-3 rounded-2xl bg-card p-4 brut", !n.read && "bg-yellow")}>
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary brut-sm">
+            <Link to="/q/$id" params={{ id: n.question_id }} className={cn("flex items-center gap-3 rounded-2xl bg-card p-4 brut", !n.read && "bg-white/[0.12]")}>
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-chrome brut-sm">
                 {n.kind === "ended" ? <Flag className="size-5" /> : n.kind === "comments" ? <MessageCircle className="size-5" /> : <Vote className="size-5" />}
               </span>
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{n.title}</p>
                 <p className="text-xs text-muted-foreground">{notificationText(n)}</p>
               </div>
-              {!n.read && <span className="ml-auto shrink-0 rounded-md bg-primary px-1.5 text-[10px] font-extrabold uppercase brut-sm">new</span>}
+              {!n.read && <span className="ml-auto shrink-0 size-2 rounded-full bg-chrome" aria-label="Unread"></span>}
             </Link>
           </li>
         ))}

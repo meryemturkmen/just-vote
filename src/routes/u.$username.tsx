@@ -50,7 +50,7 @@ function PublicProfilePage() {
 
   if (isLoading) return <AppShell><ListSkeleton /></AppShell>;
   if (!p) return (
-    <AppShell title="Who? 🤔">
+    <AppShell title="User not found">
       <p className="text-muted-foreground">No one goes by @{username}.</p>
       <Button asChild variant="hero" className="mt-6 h-12 w-full"><Link to="/">Back to the feed</Link></Button>
     </AppShell>

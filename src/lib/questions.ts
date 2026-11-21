@@ -237,7 +237,7 @@ export function optionLabel(kind: QuestionKind, key: Choice) {
   return key.toUpperCase();
 }
 
-export const OPTION_COLORS: Record<Choice, string> = { a: "bg-yellow", b: "bg-lime", c: "bg-pink", d: "bg-card" };
+export const OPTION_COLORS: Record<Choice, string> = { a: "bg-chrome", b: "bg-lime", c: "bg-pink", d: "bg-card" };
 
 /** Total votes and the voter's share for a question. */
 export function totals(q: Pick<Question, "options" | "myVote">) {

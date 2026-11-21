@@ -28,7 +28,7 @@ export function CommentSection({ q }: { q: Question }) {
   return (
     <section className="mt-10">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-2xl">The comments 🍿 <span className="text-base">({count})</span></h2>
+        <h2 className="text-[22px]">Comments <span className="text-[17px] font-normal tabular-nums text-muted-foreground">{count}</span></h2>
         <div className="flex gap-1.5">
           <Chip active={sort === "top"} onClick={() => setSort("top")}>Top</Chip>
           <Chip active={sort === "new"} onClick={() => setSort("new")}>New</Chip>
@@ -36,7 +36,7 @@ export function CommentSection({ q }: { q: Question }) {
       </div>
       <Composer q={q} parentId={null} signedIn={!!user} />
       {isLoading && <div className="mt-4 space-y-3"><Bone className="h-24" /><Bone className="h-24" /></div>}
-      {data?.length === 0 && <p className="mt-5 font-bold">Dead silence 🦗 Be the first to say something.</p>}
+      {data?.length === 0 && <p className="mt-5 text-[15px] text-muted-foreground">No comments yet. Be the first.</p>}
       <ul className="mt-5 space-y-4">
         {data && sortComments(data, sort).map((c, i) => (
           <li key={c.id}>
@@ -56,7 +56,7 @@ function Composer({ q, parentId, signedIn, onDone }: { q: Question; parentId: st
     mutationFn: () => postComment(q.id, body, tags, parentId),
     onSuccess: () => {
       setBody(""); setTags([]);
-      toast.success(parentId ? "Reply sent 💬" : "Said what you said 💅");
+      toast.success(parentId ? "Reply posted" : "Comment posted");
       qc.invalidateQueries({ queryKey: ["comments", q.id] });
       onDone?.();
     },
@@ -64,7 +64,7 @@ function Composer({ q, parentId, signedIn, onDone }: { q: Question; parentId: st
   });
   const reply = !!parentId;
   return (
-    <div className={cn("rounded-2xl p-4 brut", reply ? "mt-2 bg-card" : "mt-4 bg-lime")}>
+    <div className={cn("rounded-3xl bg-card p-4 brut-sm", reply ? "mt-2" : "mt-4")}>
       {!reply && (
         <div className="mb-3 flex flex-wrap gap-2">
           {FEEDBACK_TAGS.map((t) => (
@@ -73,21 +73,21 @@ function Composer({ q, parentId, signedIn, onDone }: { q: Question; parentId: st
         </div>
       )}
       <Textarea
-        className="min-h-16 rounded-xl bg-card"
-        placeholder={reply ? "Clap back (nicely)…" : "Why tho? Spill it."}
+        className="min-h-16"
+        placeholder={reply ? "Write a reply…" : "Why this one? Add a comment…"}
         maxLength={COMMENT_LIMIT}
         value={body}
         onChange={(e) => setBody(e.target.value)}
       />
       <div className="mt-2 flex items-center justify-between gap-2">
-        <span className="text-xs font-bold">{body.length}/{COMMENT_LIMIT}</span>
+        <span className="text-xs tabular-nums text-muted-foreground">{body.length}/{COMMENT_LIMIT}</span>
         <Button variant="hero" className="h-10 px-5" disabled={send.isPending || (!body.trim() && !tags.length)} onClick={() => send.mutate()}>
           {reply ? "Reply" : "Post"}
         </Button>
       </div>
       {!signedIn && !reply && (
-        <p className="mt-3 text-xs font-bold">
-          Posting as anon 👻 <Link to="/auth" className="underline">Sign up</Link> to collect points when people react.
+        <p className="mt-3 text-[13px] text-muted-foreground">
+          Posting anonymously. <Link to="/auth" className="font-medium text-foreground underline">Sign up</Link> to collect points when people react.
         </p>
       )}
     </div>
@@ -103,15 +103,15 @@ function CommentItem({ c, q, tilt, isOwner, signedIn, isReply }: {
   const react = useMutation({ mutationFn: (e: string) => toggleReaction(c.id, e), onSuccess: refresh, onError: (e: Error) => toast.error(e.message) });
   const hide = useMutation({
     mutationFn: () => setCommentHidden(c.id, !c.hidden),
-    onSuccess: () => { toast.success(c.hidden ? "Back on display 👀" : "Hidden. Bye 👋"); refresh(); },
+    onSuccess: () => { toast.success(c.hidden ? "Comment visible again" : "Comment hidden"); refresh(); },
     onError: (e: Error) => toast.error(e.message),
   });
   return (
     <div>
-      <div className={cn("rounded-xl bg-card px-4 py-3 brut-sm", tilt > 0 ? "rotate-[0.4deg]" : "rotate-[-0.4deg]", c.hidden && "opacity-50")}>
+      <div className={cn("rounded-2xl bg-card px-4 py-3 brut-sm", c.hidden && "opacity-50")}>
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-extrabold">{c.author}</span>
-          <span className={cn("rounded-md px-1.5 py-0.5 text-[10px] font-extrabold uppercase brut-sm", OPTION_COLORS[c.choice], c.choice === "a" || c.choice === "c" ? "tilt-l" : "tilt-r")}>
+          <span className="text-[14px] font-semibold">{c.author}</span>
+          <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium shadow-none", OPTION_COLORS[c.choice])}>
             {q.kind === "buyskip" ? (c.choice === "a" ? "Team Buy" : "Team Skip") : `Team ${c.choice.toUpperCase()}`}
           </span>
           {c.hidden && <span className="text-[10px] font-extrabold uppercase">hidden</span>}
@@ -124,10 +124,10 @@ function CommentItem({ c, q, tilt, isOwner, signedIn, isReply }: {
             <ReportButton questionId={q.id} compact label="Report comment" onReport={(r, d) => reportComment(c.id, r, d)} />
           </span>
         </div>
-        {c.body && <p className="mt-1.5 break-words text-sm font-medium">{c.body}</p>}
+        {c.body && <p className="mt-1.5 break-words text-[15px] leading-relaxed text-foreground/90">{c.body}</p>}
         {c.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
-            {c.tags.map((t) => <span key={t} className="rounded-md bg-primary px-2 py-0.5 text-[11px] font-extrabold brut-sm">{t}</span>)}
+            {c.tags.map((t) => <span key={t} className="rounded-full border border-border bg-white/[0.06] px-2.5 py-0.5 text-[12px] font-medium">{t}</span>)}
           </div>
         )}
       </div>
@@ -143,21 +143,21 @@ function CommentItem({ c, q, tilt, isOwner, signedIn, isReply }: {
               onClick={() => react.mutate(e)}
               aria-pressed={mine}
               aria-label={`React ${e}`}
-              className={cn("rounded-full px-2 py-0.5 text-xs font-extrabold brut-sm press", mine ? "bg-yellow" : "bg-card", !n && !mine && "opacity-60")}
+              className={cn("rounded-full border border-border px-2.5 py-1 text-xs font-medium tabular-nums press", mine ? "border-white/30 bg-white/[0.14]" : "bg-white/[0.04]", !n && !mine && "opacity-60")}
             >
               {e}{n > 0 && <span className="ml-1">{n}</span>}
             </button>
           );
         })}
         {!isReply && (
-          <button type="button" onClick={() => setReplying(!replying)} className="ml-1 inline-flex items-center gap-1 text-xs font-extrabold">
+          <button type="button" onClick={() => setReplying(!replying)} className="ml-1 inline-flex items-center gap-1 text-[13px] font-medium text-muted-foreground">
             <Reply className="size-3.5" /> Reply
           </button>
         )}
       </div>
       {replying && <div className="ml-6"><Composer q={q} parentId={c.id} signedIn={signedIn} onDone={() => setReplying(false)} /></div>}
       {c.replies.length > 0 && (
-        <ul className="ml-6 mt-3 space-y-3 border-l-2 pl-3">
+        <ul className="ml-6 mt-3 space-y-3 border-l pl-3">
           {c.replies.map((r, i) => (
             <li key={r.id}><CommentItem c={r} q={q} tilt={i % 2 ? -1 : 1} isOwner={isOwner} signedIn={signedIn} isReply /></li>
           ))}

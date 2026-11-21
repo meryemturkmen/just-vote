@@ -37,11 +37,11 @@ function Mine() {
   const [deciding, setDeciding] = useState<Question | null>(null);
 
   return (
-    <AppShell title="My dilemmas">
+    <AppShell title="My questions">
       {isLoading && <ListSkeleton rows={3} h="h-40" />}
       {data?.length === 0 && (
-        <div className="rounded-2xl bg-yellow p-8 text-center brut tilt-l">
-          <p className="font-display text-lg font-semibold">No dilemmas yet. Suspiciously decisive 🤨</p>
+        <div className="rounded-2xl bg-white/[0.08] p-8 text-center brut">
+          <p className="font-display text-lg font-semibold">No questions yet.</p>
           <p className="mt-1 text-sm text-muted-foreground">Nothing to judge yet. Be the first to ask.</p>
           <Button asChild variant="hero" className="mt-5 h-11 px-6">
             <Link to="/new">New question</Link>
@@ -64,10 +64,10 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
     <article className="rounded-2xl bg-card p-4 brut">
       <div className="flex items-center gap-2">
         <CategoryTag category={q.category} />
-        {!closed && <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground"><span className="size-1.5 animate-pulse rounded-full bg-primary" /> Live</span>}
+        {!closed && <span className="flex items-center gap-1 text-[11px] font-semibold text-foreground"><span className="size-1.5 animate-pulse rounded-full bg-chrome" /> Live</span>}
         <span className="ml-auto text-[11px] font-medium text-muted-foreground">{decided ?? timeLeft(q.ends_at)}</span>
       </div>
-      <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-xl font-extrabold leading-tight">
+      <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-[20px] font-semibold leading-tight tracking-[-0.02em]">
         {displayTitle(q)}
       </Link>
       <div className={cn("mt-3 grid gap-3", q.options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
@@ -75,15 +75,15 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
           const url = q.kind === "buyskip" ? (q.options[0]?.url ?? "") : rawUrl;
           const chosen = q.decided_choice === c;
           return (
-            <div key={c} className={cn("overflow-hidden rounded-xl bg-card brut-sm", chosen && "ring-4 ring-primary ring-offset-2")}>
+            <div key={c} className={cn("overflow-hidden rounded-xl bg-card brut-sm", chosen && "ring-iridescent")}>
               <div className="relative aspect-square">
                 {url && <img src={url} alt={`Option ${c.toUpperCase()}`} className="size-full object-cover" />}
-                <span className={cn("absolute left-2 top-2 grid h-7 min-w-7 place-items-center rounded-md px-1.5 text-xs font-extrabold brut-sm", OPTION_COLORS[c])}>{label}</span>
-                {chosen && <CheckCircle2 className="absolute right-2 top-2 size-7 rounded-full bg-lime text-foreground" />}
+                <span className={cn("absolute left-2 top-2 grid h-7 min-w-7 place-items-center rounded-full px-1.5 text-xs font-semibold glass")}>{label}</span>
+                {chosen && <CheckCircle2 className="absolute right-2 top-2 size-7 rounded-full bg-chrome p-0.5" />}
               </div>
               <div className="p-2.5">
-                <div className="h-3 overflow-hidden rounded-full border-2 bg-card">
-                  <div className="h-full bg-primary transition-all duration-1000" style={{ width: `${pct}%` }} />
+                <div className="h-3 overflow-hidden rounded-full border bg-card">
+                  <div className="h-full bg-chrome transition-all duration-1000" style={{ width: `${pct}%` }} />
                 </div>
                 <p className="mt-1 text-sm font-semibold">{pct}%</p>
               </div>
@@ -92,7 +92,7 @@ function MyCard({ q, onDecide }: { q: Question; onDecide: () => void }) {
         })}
       </div>
       <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">{total} {total === 1 ? "vote" : "votes"} · 💬 {q.commentCount}</p>
+        <p className="text-xs text-muted-foreground">{total} {total === 1 ? "vote" : "votes"} · {q.commentCount} comments</p>
         {q.decided_choice ? (
           <Button asChild variant="soft" className="h-9 px-4 text-xs"><Link to="/q/$id" params={{ id: q.id }}>Final results</Link></Button>
         ) : (
@@ -122,15 +122,15 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
     <Drawer open={!!q} onOpenChange={(o) => !o && onClose()}>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle className="font-display text-xl">So… what did you get? 👀</DrawerTitle>
+          <DrawerTitle className="font-display text-xl">So, what did you go with?</DrawerTitle>
           <DrawerDescription>This ends voting and tells everyone your pick.</DrawerDescription>
         </DrawerHeader>
         {q && (
           <div className="px-4 pb-6">
             {q.kind === "buyskip" ? (
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="hero" className="h-14" disabled={decide.isPending} onClick={() => decide.mutate("a")}>🛒 I bought it</Button>
-                <Button variant="soft" className="h-14" disabled={decide.isPending} onClick={() => decide.mutate("b")}>🙅 I skipped it</Button>
+                <Button variant="hero" className="h-14" disabled={decide.isPending} onClick={() => decide.mutate("a")}>I bought it</Button>
+                <Button variant="soft" className="h-14" disabled={decide.isPending} onClick={() => decide.mutate("b")}>I skipped it</Button>
               </div>
             ) : (
             <div className="grid grid-cols-2 gap-3">
@@ -143,7 +143,7 @@ function DecideSheet({ q, onClose }: { q: Question | null; onClose: () => void }
                   className="relative overflow-hidden rounded-xl bg-muted brut press"
                 >
                   <img src={url} alt={`Option ${c.toUpperCase()}`} className="aspect-square w-full object-cover" />
-                  <span className={cn("absolute left-2 top-2 grid size-8 place-items-center rounded-md font-extrabold brut-sm", OPTION_COLORS[c])}>{c.toUpperCase()}</span>
+                  <span className={cn("absolute left-2 top-2 grid size-8 place-items-center rounded-full font-semibold glass")}>{c.toUpperCase()}</span>
                 </button>
               ))}
             </div>
@@ -169,7 +169,7 @@ function BoostButton({ q }: { q: Question }) {
     },
     onError: (e: Error) => toast.error(e.message),
   });
-  if (isBoosted(q)) return <span className="self-center text-xs font-semibold text-foreground">🚀 Boosted</span>;
+  if (isBoosted(q)) return <span className="self-center text-xs font-semibold text-foreground">Boosted</span>;
   return (
     <Button variant="soft" className="h-9 px-3 text-xs" disabled={boost.isPending} onClick={() => boost.mutate()}>
       🚀 Boost · {BOOST_COST} pts

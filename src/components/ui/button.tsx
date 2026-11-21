@@ -5,25 +5,28 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full text-[15px] font-semibold tracking-[-0.01em] cursor-pointer press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 disabled:cursor-not-allowed [&_svg]:pointer-events-none [&_svg]:size-[18px] [&_svg]:shrink-0 [&_svg]:stroke-[1.8]",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground brut press",
-        destructive: "bg-destructive text-destructive-foreground brut press",
-        outline: "bg-card text-foreground brut press",
-        secondary: "bg-secondary text-secondary-foreground brut press",
-        ghost: "hover:bg-muted",
-        link: "text-foreground underline underline-offset-4 decoration-2",
-        hero: "bg-primary text-primary-foreground brut press font-display text-base font-extrabold uppercase tracking-tight",
-        soft: "bg-yellow text-foreground brut press font-display font-extrabold",
-        lime: "bg-lime text-foreground brut press font-display font-extrabold",
+        default: "bg-chrome",
+        destructive: "bg-destructive/15 text-destructive border border-destructive/30",
+        outline: "border border-border bg-white/[0.05] text-foreground",
+        secondary: "bg-lime",
+        ghost: "text-foreground/80 hover:bg-white/[0.06]",
+        link: "text-foreground underline underline-offset-4",
+        /* Primary call to action: polished chrome */
+        hero: "bg-chrome text-[16px]",
+        /* Secondary: quiet tinted fill */
+        soft: "border border-border bg-white/[0.07] text-foreground",
+        /* Tertiary accent: forest green */
+        lime: "bg-lime border border-white/[0.08]",
       },
       size: {
-        default: "h-11 px-4",
-        sm: "h-9 px-3 text-xs",
+        default: "h-11 px-5",
+        sm: "h-9 px-3.5 text-[13px]",
         lg: "h-12 px-8",
-        xl: "h-14 px-8 text-lg",
+        xl: "h-14 px-8 text-[17px]",
         icon: "h-11 w-11",
       },
     },

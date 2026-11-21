@@ -54,14 +54,14 @@ function Admin() {
   if (role.isLoading) return <AppShell title="Reports"><ListSkeleton /></AppShell>;
   if (!role.data) {
     return (
-      <AppShell title="Nope 🙅">
+      <AppShell title="No access">
         <p className="font-medium">Admins only. <Link to="/" className="font-extrabold underline">Back to the feed</Link></p>
       </AppShell>
     );
   }
 
   return (
-    <AppShell title="Reports 🚨">
+    <AppShell title="Reports">
       <div className="mb-4 grid grid-cols-2 gap-2">
         {(["open", "done"] as const).map((t) => (
           <Button key={t} variant={tab === t ? "hero" : "soft"} className="h-11" onClick={() => setTab(t)}>
@@ -72,7 +72,7 @@ function Admin() {
       {reports.isLoading && <ListSkeleton rows={3} h="h-48" />}
       {reports.isError && <p className="font-bold text-destructive">Couldn't load reports. {(reports.error as Error).message}</p>}
       {reports.data?.length === 0 && (
-        <div className="tilt-l rounded-2xl bg-lime p-6 text-center brut">
+        <div className=" rounded-2xl bg-lime p-6 text-center brut">
           <p className="font-display text-xl font-extrabold">Inbox zero 🧘</p>
           <p className="text-sm">Nobody's snitching right now.</p>
         </div>
@@ -114,7 +114,7 @@ function ReportCard({ group, onChange }: { group: { id: string; reports: Report[
           <Link to="/q/$id" params={{ id: q.id }} className="mt-2 block font-display text-lg font-extrabold leading-tight underline">{displayTitle(q)}</Link>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {[...new Set(q.options.map((o) => o.url))].map((u, i) => (
-              <img key={i} src={u} alt={`Option ${i ? "B" : "A"}`} className="aspect-square w-full rounded-xl border-2 object-cover" />
+              <img key={i} src={u} alt={`Option ${i ? "B" : "A"}`} className="aspect-square w-full rounded-xl border object-cover" />
             ))}
           </div>
         </>
@@ -138,7 +138,7 @@ function ReportCard({ group, onChange }: { group: { id: string; reports: Report[
             }, hidden ? "Unhidden" : "Hidden 🙈")}>
             {hidden ? "Unhide" : "Hide"}
           </Button>
-          <Button variant="destructive" className="h-11 border-2 px-2" disabled={busy}
+          <Button variant="destructive" className="h-11 border px-2" disabled={busy}
             onClick={() => { if (window.confirm("Delete this question and its photos for good?")) run(async () => { await markReports("removed"); await del({ data: { id: q.id } }); }, "Deleted 🗑️"); }}>
             Delete
           </Button>

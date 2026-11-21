@@ -7,8 +7,8 @@ export function Chip({ active, onClick, children }: { active?: boolean; onClick?
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "shrink-0 rounded-full px-4 py-2 text-sm font-bold brut-sm press",
-        active ? "bg-ink text-background" : "bg-card text-foreground",
+        "shrink-0 rounded-full px-4 py-2 text-[14px] font-medium press",
+        active ? "bg-foreground text-background" : "border border-border bg-white/[0.04] text-foreground/80",
       )}
     >
       {children}
@@ -16,12 +16,10 @@ export function Chip({ active, onClick, children }: { active?: boolean; onClick?
   );
 }
 
-const STICKER_COLORS = ["bg-yellow", "bg-lime", "bg-pink"] as const;
-
 export function CategoryTag({ category }: { category: string }) {
-  const color = STICKER_COLORS[category.length % STICKER_COLORS.length];
   return (
-    <span className={cn("tilt-l inline-flex shrink-0 items-center rounded-md px-2.5 py-1 font-display text-xs font-extrabold uppercase brut-sm", color)}>
+    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-white/[0.05] px-2.5 py-1 text-[12px] font-medium text-foreground/85">
+      <span className="size-1.5 rounded-full bg-chrome shadow-none" />
       {category}
     </span>
   );
@@ -29,7 +27,7 @@ export function CategoryTag({ category }: { category: string }) {
 
 export function Sticker({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <span className={cn("tilt-r inline-flex items-center rounded-md bg-card px-2.5 py-1 text-xs font-bold brut-sm", className)}>
+    <span className={cn("inline-flex items-center gap-1 rounded-full border border-border bg-white/[0.05] px-2.5 py-1 text-[12px] font-medium text-foreground/85", className)}>
       {children}
     </span>
   );

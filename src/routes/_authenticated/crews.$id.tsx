@@ -72,7 +72,7 @@ function CrewPage() {
 
   if (crew.isLoading) return <AppShell><ListSkeleton /></AppShell>;
   if (!crew.data) return (
-    <AppShell title="Crew not found 🤷">
+    <AppShell title="Crew not found">
       <p className="text-muted-foreground">You're not in this crew, or it doesn't exist anymore.</p>
       <Button asChild variant="hero" className="mt-6 h-12 w-full"><Link to="/crews">My crews</Link></Button>
     </AppShell>
@@ -83,7 +83,7 @@ function CrewPage() {
   return (
     <AppShell>
       <div className="flex items-center gap-4 rounded-2xl bg-lime p-5 brut">
-        <span className="grid size-16 place-items-center rounded-xl bg-card text-4xl brut-sm tilt-l">{c.emoji}</span>
+        <span className="grid size-16 place-items-center rounded-xl bg-card text-4xl brut-sm">{c.emoji}</span>
         <div className="min-w-0">
           <h1 className="truncate text-2xl">{c.name}</h1>
           <p className="text-sm font-bold">{c.crew_members.length} in the crew · private</p>
@@ -102,7 +102,7 @@ function CrewPage() {
             <Link key={q.id} to="/q/$id" params={{ id: q.id }} className="flex items-center gap-3 rounded-xl bg-card p-2 brut-sm press">
               <div className="flex shrink-0 gap-1">
                 {q.options.slice(0, q.kind === "buyskip" ? 1 : 4).map((o) => (
-                  <img key={o.key} src={o.url} alt={`Option ${o.label}`} className="size-12 rounded-lg border-2 object-cover" />
+                  <img key={o.key} src={o.url} alt={`Option ${o.label}`} className="size-12 rounded-lg border object-cover" />
                 ))}
               </div>
               <div className="min-w-0 flex-1">
@@ -132,7 +132,7 @@ function CrewPage() {
 
       <div className="mt-8 space-y-2">
         {isOwner && <Button variant="soft" className="h-11 w-full" onClick={resetLink}>Reset invite link</Button>}
-        {!isOwner && <Button variant="destructive" className="h-11 w-full border-2" onClick={leave}>Leave crew</Button>}
+        {!isOwner && <Button variant="destructive" className="h-11 w-full border" onClick={leave}>Leave crew</Button>}
       </div>
     </AppShell>
   );

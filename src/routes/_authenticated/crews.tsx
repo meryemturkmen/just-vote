@@ -47,18 +47,18 @@ function Crews() {
   }
 
   return (
-    <AppShell title="Your crews 🫂">
+    <AppShell title="Crews">
       <p className="text-sm text-muted-foreground">Private groups. Questions posted to a crew are only visible to its members.</p>
       <div className="mt-5 space-y-2">
         {isLoading ? <ListSkeleton /> : data?.length ? data.map((c) => (
           <Link key={c.id} to="/crews/$id" params={{ id: c.id }} className="flex items-center gap-3 rounded-xl bg-card p-3 brut-sm press">
-            <span className="grid size-11 place-items-center rounded-lg bg-lime text-2xl brut-sm tilt-r">{c.emoji}</span>
+            <span className="grid size-11 place-items-center rounded-lg bg-lime text-2xl brut-sm">{c.emoji}</span>
             <span className="min-w-0 flex-1 truncate font-display text-lg font-bold">{c.name}</span>
             <span className="text-xs font-bold text-muted-foreground">{c.members} {c.members === 1 ? "member" : "members"}</span>
           </Link>
         )) : <p className="rounded-xl bg-card p-5 text-center brut-sm">No crew yet. Squad up 👇</p>}
       </div>
-      <form onSubmit={create} className="mt-8 rounded-2xl bg-yellow p-4 brut">
+      <form onSubmit={create} className="mt-8 rounded-2xl bg-white/[0.08] p-4 brut">
         <p className="font-display text-lg font-bold">Start a crew</p>
         <div className="mt-3 flex flex-wrap gap-2">
           {CREW_EMOJIS.map((e) => (
